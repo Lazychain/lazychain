@@ -2,12 +2,15 @@
 
 # set variables for the chain
 VALIDATOR_NAME=validator1
-CHAIN_ID=celeswasm
-KEY_NAME=celeswasm-key
+CHAIN_ID=sloth
+KEY_NAME=sloth-key
 TOKEN_AMOUNT="10000000000000000000000000ulazy"
 STAKING_AMOUNT=1000000000ulazy
 CHAINFLAG="--chain-id ${CHAIN_ID}"
 TXFLAG="--chain-id ${CHAIN_ID} --gas-prices 0ulazy --gas auto --gas-adjustment 1.3"
+
+echo -e "\n Deleting existing slothd data... \n"
+rm -rf $HOME"/.slothd"
 
 # query the DA Layer start height, in this case we are querying
 # an RPC endpoint provided by Celestia Labs. The RPC endpoint is
@@ -59,7 +62,7 @@ jq --argjson pubKey "$PUB_KEY" '.consensus["validators"]=[{"address": "'$ADDRESS
 echo "DA_BLOCK_HEIGHT=$DA_BLOCK_HEIGHT" >> restart-slothd.sh
 echo "AUTH_TOKEN=$AUTH_TOKEN" >> restart-slothd.sh
 
-echo "slothd start --rollkit.aggregator --rollkit.da_auth_token=\$AUTH_TOKEN --rollkit.da_namespace 00000000000000000000000000000000000000000008e5f679bf7116cb --rollkit.da_start_height \$DA_BLOCK_HEIGHT --rpc.laddr tcp://127.0.0.1:36657 --grpc.address 127.0.0.1:9290 --p2p.laddr \"0.0.0.0:36656\" --minimum-gas-prices="0.025ulazy"" >> restart-slothd.sh
+echo "slothd start --rollkit.lazy_aggregator --rollkit.aggregator --rollkit.da_auth_token=\$AUTH_TOKEN --rollkit.da_namespace 00000000000000000000000000000000000000000008e5f679bf7116cb --rollkit.da_start_height \$DA_BLOCK_HEIGHT --rpc.laddr tcp://127.0.0.1:36657 --grpc.address 127.0.0.1:9290 --p2p.laddr \"0.0.0.0:36656\" --minimum-gas-prices="0.025ulazy"" >> restart-slothd.sh
 
 # start the chain
-slothd start --rollkit.aggregator --rollkit.da_auth_token=$AUTH_TOKEN --rollkit.da_namespace 00000000000000000000000000000000000000000008e5f679bf7116cb --rollkit.da_start_height $DA_BLOCK_HEIGHT --rpc.laddr tcp://127.0.0.1:36657 --grpc.address 127.0.0.1:9290 --p2p.laddr "0.0.0.0:36656" --minimum-gas-prices="0.025ulazy"
+slothd start --rollkit.lazy_aggregator --rollkit.aggregator --rollkit.da_auth_token=$AUTH_TOKEN --rollkit.da_namespace 00000000000000000000000000000000000000000008e5f679bf7116cb --rollkit.da_start_height $DA_BLOCK_HEIGHT --rpc.laddr tcp://127.0.0.1:36657 --grpc.address 127.0.0.1:9290 --p2p.laddr "0.0.0.0:36656" --minimum-gas-prices="0.025ulazy"
