@@ -156,7 +156,7 @@ func TestAccessConfigMigrations(t *testing.T) {
 	assert.Equal(t, types.AllowNobody, wasmApp.WasmKeeper.GetCodeInfo(ctx, code3).InstantiateConfig)
 }
 
-func storeCode(ctx sdk.Context, wasmApp *app.WasmApp, instantiatePermission types.AccessConfig) (codeID uint64, err error) {
+func storeCode(ctx sdk.Context, wasmApp *app.SlothApp, instantiatePermission types.AccessConfig) (codeID uint64, err error) {
 	msg := types.MsgStoreCodeFixture(func(m *types.MsgStoreCode) {
 		m.WASMByteCode = wasmContract
 		m.InstantiatePermission = &instantiatePermission

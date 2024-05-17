@@ -36,7 +36,7 @@ func TestICA(t *testing.T) {
 	coord := wasmibctesting.NewCoordinator(t, 2)
 	hostChain := coord.GetChain(ibctesting.GetChainID(1))
 	hostParams := hosttypes.NewParams(true, []string{sdk.MsgTypeURL(&banktypes.MsgSend{})})
-	hostApp := hostChain.App.(*app.WasmApp)
+	hostApp := hostChain.App.(*app.SlothApp)
 	hostApp.ICAHostKeeper.SetParams(hostChain.GetContext(), hostParams)
 
 	controllerChain := coord.GetChain(ibctesting.GetChainID(2))
@@ -90,7 +90,7 @@ func TestICA(t *testing.T) {
 			coord.CreateChannels(path)
 
 			// assert ICA exists on controller
-			contApp := controllerChain.App.(*app.WasmApp)
+			contApp := controllerChain.App.(*app.SlothApp)
 			icaRsp, err := contApp.ICAControllerKeeper.InterchainAccount(controllerChain.GetContext(), &icacontrollertypes.QueryInterchainAccountRequest{
 				Owner:        icaControllerAddr.String(),
 				ConnectionId: path.EndpointA.ConnectionID,

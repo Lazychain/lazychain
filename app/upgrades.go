@@ -21,7 +21,7 @@ import (
 )
 
 // RegisterUpgradeHandlers registers the chain upgrade handlers
-func (app *WasmApp) RegisterUpgradeHandlers() {
+func (app *SlothApp) RegisterUpgradeHandlers() {
 	setupLegacyKeyTables(&app.ParamsKeeper)
 
 	// Setup upgrade handler stuff here:

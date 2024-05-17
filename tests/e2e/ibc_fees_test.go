@@ -55,7 +55,7 @@ func TestIBCFeesTransfer(t *testing.T) {
 	}
 	// with an ics-20 transfer channel setup between both chains
 	coord.Setup(path)
-	appA := chainA.App.(*app.WasmApp)
+	appA := chainA.App.(*app.SlothApp)
 	require.True(t, appA.IBCFeeKeeper.IsFeeEnabled(chainA.GetContext(), ibctransfertypes.PortID, path.EndpointA.ChannelID))
 	// and with a payee registered on both chains
 	_, err := chainA.SendMsgs(ibcfee.NewMsgRegisterPayee(ibctransfertypes.PortID, path.EndpointA.ChannelID, actorChainA.String(), payee.String()))
@@ -95,7 +95,7 @@ func TestIBCFeesTransfer(t *testing.T) {
 	feeMsg = ibcfee.NewMsgPayPacketFee(ibcPackageFee, ibctransfertypes.PortID, path.EndpointB.ChannelID, actorChainB.String(), nil)
 	_, err = chainB.SendMsgs(feeMsg, ibcPayloadMsg)
 	require.NoError(t, err)
-	appB := chainB.App.(*app.WasmApp)
+	appB := chainB.App.(*app.SlothApp)
 	pendingIncentivisedPackages = appB.IBCFeeKeeper.GetIdentifiedPacketFeesForChannel(chainB.GetContext(), ibctransfertypes.PortID, path.EndpointB.ChannelID)
 	assert.Len(t, pendingIncentivisedPackages, 1)
 
@@ -150,8 +150,8 @@ func TestIBCFeesWasm(t *testing.T) {
 	}
 	// with an ics-29 fee enabled channel setup between both chains
 	coord.Setup(path)
-	appA := chainA.App.(*app.WasmApp)
-	appB := chainB.App.(*app.WasmApp)
+	appA := chainA.App.(*app.SlothApp)
+	appB := chainB.App.(*app.SlothApp)
 	require.True(t, appA.IBCFeeKeeper.IsFeeEnabled(chainA.GetContext(), ibcContractPortID, path.EndpointA.ChannelID))
 	require.True(t, appB.IBCFeeKeeper.IsFeeEnabled(chainB.GetContext(), ibctransfertypes.PortID, path.EndpointB.ChannelID))
 	// and with a payee registered for A -> B

@@ -45,7 +45,7 @@ func TestGovVoteByContract(t *testing.T) {
 	e2e.MustExecViaReflectContract(t, chain, contractAddr, delegateMsg)
 
 	signer := chain.SenderAccount.GetAddress().String()
-	app := chain.App.(*app.WasmApp)
+	app := chain.App.(*app.SlothApp)
 	govKeeper, accountKeeper := app.GovKeeper, app.AccountKeeper
 	communityPoolBalance := chain.Balance(accountKeeper.GetModuleAccount(chain.GetContext(), distributiontypes.ModuleName).GetAddress(), sdk.DefaultBondDenom)
 	require.False(t, communityPoolBalance.IsZero())

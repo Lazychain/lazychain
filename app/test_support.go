@@ -12,30 +12,30 @@ import (
 	wasmkeeper "github.com/gjermundgaraba/slothchain/x/wasm/keeper"
 )
 
-func (app *WasmApp) GetIBCKeeper() *ibckeeper.Keeper {
+func (app *SlothApp) GetIBCKeeper() *ibckeeper.Keeper {
 	return app.IBCKeeper
 }
 
-func (app *WasmApp) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
+func (app *SlothApp) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
 	return app.ScopedIBCKeeper
 }
 
-func (app *WasmApp) GetBaseApp() *baseapp.BaseApp {
+func (app *SlothApp) GetBaseApp() *baseapp.BaseApp {
 	return app.BaseApp
 }
 
-func (app *WasmApp) GetBankKeeper() bankkeeper.Keeper {
+func (app *SlothApp) GetBankKeeper() bankkeeper.Keeper {
 	return app.BankKeeper
 }
 
-func (app *WasmApp) GetStakingKeeper() *stakingkeeper.Keeper {
+func (app *SlothApp) GetStakingKeeper() *stakingkeeper.Keeper {
 	return app.StakingKeeper
 }
 
-func (app *WasmApp) GetAccountKeeper() authkeeper.AccountKeeper {
+func (app *SlothApp) GetAccountKeeper() authkeeper.AccountKeeper {
 	return app.AccountKeeper
 }
 
-func (app *WasmApp) GetWasmKeeper() wasmkeeper.Keeper {
+func (app *SlothApp) GetWasmKeeper() wasmkeeper.Keeper {
 	return app.WasmKeeper
 }

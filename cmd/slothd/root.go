@@ -37,7 +37,7 @@ func NewRootCmd() *cobra.Command {
 	cfg.Seal()
 	// we "pre"-instantiate the application for getting the injected/configured encoding configuration
 	// note, this is not necessary when using app wiring, as depinject can be directly used (see root_v2.go)
-	tempApp := app.NewWasmApp(log.NewNopLogger(), dbm.NewMemDB(), nil, false, simtestutil.NewAppOptionsWithFlagHome(tempDir()), []wasmkeeper.Option{})
+	tempApp := app.NewSlothApp(log.NewNopLogger(), dbm.NewMemDB(), nil, false, simtestutil.NewAppOptionsWithFlagHome(tempDir()), []wasmkeeper.Option{})
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: tempApp.InterfaceRegistry(),
 		Codec:             tempApp.AppCodec(),
@@ -112,7 +112,18 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
+			if cmd.Name() == "start" {
+				serverCtx.Logger.Info("LM")
+				serverCtx.Logger.Info("💤 Starting chain... ")
+			}
+
 			return nil
+		},
+		PersistentPostRun: func(cmd *cobra.Command, _ []string) {
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			if cmd.Name() == "start" && serverCtx.Logger != nil {
+				serverCtx.Logger.Info("Finally done, time to be lazy! 💤️")
+			}
 		},
 	}
 
