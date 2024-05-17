@@ -6,6 +6,8 @@ Forked from Wasmd and changed to Rollkit (https://rollkit.dev/tutorials/cosmwasm
 
 For a production version of this we will obviously add Wasmd as a normal dependency rather than forking it.
 
+This project was built for Celestia's Infinite Space Bazaar. The project page has some info and videos as well: https://dorahacks.io/buidl/12710
+
 ## How is SlothChain Lazy?
 
 SlothChain is meme chain. The goal is to make it very memey. It is a chain for the lazy ones.
