@@ -15,9 +15,7 @@ import (
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	_ "cosmossdk.io/x/feegrant/module" // import for side-effects
-	nftkeeper "cosmossdk.io/x/nft/keeper"
-	_ "cosmossdk.io/x/nft/module" // import for side-effects
-	_ "cosmossdk.io/x/upgrade"    // import for side-effects
+	_ "cosmossdk.io/x/upgrade"         // import for side-effects
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -37,8 +35,6 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	_ "github.com/cosmos/cosmos-sdk/x/auth/vesting" // import for side-effects
-	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	_ "github.com/cosmos/cosmos-sdk/x/authz/module" // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/bank"         // import for side-effects
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	_ "github.com/cosmos/cosmos-sdk/x/consensus" // import for side-effects
@@ -49,13 +45,8 @@ import (
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
-	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	groupkeeper "github.com/cosmos/cosmos-sdk/x/group/keeper"
-	_ "github.com/cosmos/cosmos-sdk/x/group/module" // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/mint"         // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/mint" // import for side-effects
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
 	_ "github.com/cosmos/cosmos-sdk/x/params" // import for side-effects
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
@@ -68,12 +59,13 @@ import (
 	_ "github.com/cosmos/ibc-go/modules/capability" // import for side-effects
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	_ "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts" // import for side-effects
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
-	_ "github.com/cosmos/ibc-go/v8/modules/apps/29-fee" // import for side-effects
+	_ "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"                 // import for side-effects
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
@@ -114,30 +106,26 @@ type App struct {
 
 	SlashingKeeper       slashingkeeper.Keeper
 	MintKeeper           mintkeeper.Keeper
-	GovKeeper            *govkeeper.Keeper
 	CrisisKeeper         *crisiskeeper.Keeper
 	UpgradeKeeper        *upgradekeeper.Keeper
 	ParamsKeeper         paramskeeper.Keeper
-	AuthzKeeper          authzkeeper.Keeper
 	EvidenceKeeper       evidencekeeper.Keeper
 	FeeGrantKeeper       feegrantkeeper.Keeper
-	GroupKeeper          groupkeeper.Keeper
-	NFTKeeper            nftkeeper.Keeper
 	CircuitBreakerKeeper circuitkeeper.Keeper
 
 	// IBC
-	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	CapabilityKeeper    *capabilitykeeper.Keeper
-	IBCFeeKeeper        ibcfeekeeper.Keeper
-	ICAControllerKeeper icacontrollerkeeper.Keeper
-	ICAHostKeeper       icahostkeeper.Keeper
-	TransferKeeper      ibctransferkeeper.Keeper
+	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	CapabilityKeeper *capabilitykeeper.Keeper
+	IBCFeeKeeper     ibcfeekeeper.Keeper
+	TransferKeeper   ibctransferkeeper.Keeper
 
 	// Scoped IBC
-	ScopedIBCKeeper           capabilitykeeper.ScopedKeeper
-	ScopedIBCTransferKeeper   capabilitykeeper.ScopedKeeper
-	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
-	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
+	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
+	ScopedIBCTransferKeeper capabilitykeeper.ScopedKeeper
+
+	// CosmWasm
+	WasmKeeper       wasmkeeper.Keeper
+	ScopedWasmKeeper capabilitykeeper.ScopedKeeper
 
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
@@ -177,7 +165,6 @@ func AppConfig() depinject.Config {
 			// supply custom module basics
 			map[string]module.AppModuleBasic{
 				genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-				govtypes.ModuleName:     gov.NewAppModuleBasic(getGovProposalHandlers()),
 				// this line is used by starport scaffolding # stargate/appConfig/moduleBasic
 			},
 		),
@@ -267,15 +254,11 @@ func New(
 		&app.ConsensusParamsKeeper,
 		&app.SlashingKeeper,
 		&app.MintKeeper,
-		&app.GovKeeper,
 		&app.CrisisKeeper,
 		&app.UpgradeKeeper,
 		&app.ParamsKeeper,
-		&app.AuthzKeeper,
 		&app.EvidenceKeeper,
 		&app.FeeGrantKeeper,
-		&app.NFTKeeper,
-		&app.GroupKeeper,
 		&app.CircuitBreakerKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
@@ -354,7 +337,9 @@ func New(
 		return nil, err
 	}
 
-	return app, nil
+	return app, app.WasmKeeper.
+		InitializePinnedCodes(app.NewUncachedContext(true, tmproto.Header{}))
+
 }
 
 // LegacyAmino returns App's amino codec.

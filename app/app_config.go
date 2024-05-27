@@ -1,12 +1,9 @@
 package app
 
 import (
-	"time"
-
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
 	appv1alpha1 "cosmossdk.io/api/cosmos/app/v1alpha1"
 	authmodulev1 "cosmossdk.io/api/cosmos/auth/module/v1"
-	authzmodulev1 "cosmossdk.io/api/cosmos/authz/module/v1"
 	bankmodulev1 "cosmossdk.io/api/cosmos/bank/module/v1"
 	circuitmodulev1 "cosmossdk.io/api/cosmos/circuit/module/v1"
 	consensusmodulev1 "cosmossdk.io/api/cosmos/consensus/module/v1"
@@ -15,10 +12,7 @@ import (
 	evidencemodulev1 "cosmossdk.io/api/cosmos/evidence/module/v1"
 	feegrantmodulev1 "cosmossdk.io/api/cosmos/feegrant/module/v1"
 	genutilmodulev1 "cosmossdk.io/api/cosmos/genutil/module/v1"
-	govmodulev1 "cosmossdk.io/api/cosmos/gov/module/v1"
-	groupmodulev1 "cosmossdk.io/api/cosmos/group/module/v1"
 	mintmodulev1 "cosmossdk.io/api/cosmos/mint/module/v1"
-	nftmodulev1 "cosmossdk.io/api/cosmos/nft/module/v1"
 	paramsmodulev1 "cosmossdk.io/api/cosmos/params/module/v1"
 	slashingmodulev1 "cosmossdk.io/api/cosmos/slashing/module/v1"
 	stakingmodulev1 "cosmossdk.io/api/cosmos/staking/module/v1"
@@ -29,29 +23,24 @@ import (
 	circuittypes "cosmossdk.io/x/circuit/types"
 	evidencetypes "cosmossdk.io/x/evidence/types"
 	"cosmossdk.io/x/feegrant"
-	"cosmossdk.io/x/nft"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	consensustypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/cosmos/cosmos-sdk/x/group"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	"google.golang.org/protobuf/types/known/durationpb"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -70,25 +59,21 @@ var (
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
-		govtypes.ModuleName,
 		minttypes.ModuleName,
 		crisistypes.ModuleName,
 		ibcexported.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
-		authz.ModuleName,
 		ibctransfertypes.ModuleName,
-		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
-		nft.ModuleName,
-		group.ModuleName,
 		consensustypes.ModuleName,
 		circuittypes.ModuleName,
 		// chain modules
+		wasmtypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 
@@ -104,33 +89,30 @@ var (
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
 		stakingtypes.ModuleName,
-		authz.ModuleName,
 		genutiltypes.ModuleName,
 		// ibc modules
 		capabilitytypes.ModuleName,
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
-		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		// chain modules
+		wasmtypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	}
 
 	endBlockers = []string{
 		// cosmos sdk modules
 		crisistypes.ModuleName,
-		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
-		group.ModuleName,
 		genutiltypes.ModuleName,
 		// ibc modules
 		ibcexported.ModuleName,
 		ibctransfertypes.ModuleName,
 		capabilitytypes.ModuleName,
-		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		// chain modules
+		wasmtypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	}
 
@@ -146,11 +128,9 @@ var (
 		{Account: minttypes.ModuleName, Permissions: []string{authtypes.Minter}},
 		{Account: stakingtypes.BondedPoolName, Permissions: []string{authtypes.Burner, stakingtypes.ModuleName}},
 		{Account: stakingtypes.NotBondedPoolName, Permissions: []string{authtypes.Burner, stakingtypes.ModuleName}},
-		{Account: govtypes.ModuleName, Permissions: []string{authtypes.Burner}},
-		{Account: nft.ModuleName},
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 		{Account: ibcfeetypes.ModuleName},
-		{Account: icatypes.ModuleName},
+		{Account: wasmtypes.ModuleName, Permissions: []string{authtypes.Burner}},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 
@@ -161,9 +141,6 @@ var (
 		minttypes.ModuleName,
 		stakingtypes.BondedPoolName,
 		stakingtypes.NotBondedPoolName,
-		nft.ModuleName,
-		// We allow the following module accounts to receive funds:
-		// govtypes.ModuleName
 	}
 
 	// appConfig application configuration (used by depinject)
@@ -201,10 +178,6 @@ var (
 				}),
 			},
 			{
-				Name:   nft.ModuleName,
-				Config: appconfig.WrapAny(&nftmodulev1.Module{}),
-			},
-			{
 				Name:   vestingtypes.ModuleName,
 				Config: appconfig.WrapAny(&vestingmodulev1.Module{}),
 			},
@@ -240,10 +213,6 @@ var (
 				Config: appconfig.WrapAny(&genutilmodulev1.Module{}),
 			},
 			{
-				Name:   authz.ModuleName,
-				Config: appconfig.WrapAny(&authzmodulev1.Module{}),
-			},
-			{
 				Name:   upgradetypes.ModuleName,
 				Config: appconfig.WrapAny(&upgrademodulev1.Module{}),
 			},
@@ -260,19 +229,8 @@ var (
 				Config: appconfig.WrapAny(&mintmodulev1.Module{}),
 			},
 			{
-				Name: group.ModuleName,
-				Config: appconfig.WrapAny(&groupmodulev1.Module{
-					MaxExecutionPeriod: durationpb.New(time.Second * 1209600),
-					MaxMetadataLen:     255,
-				}),
-			},
-			{
 				Name:   feegrant.ModuleName,
 				Config: appconfig.WrapAny(&feegrantmodulev1.Module{}),
-			},
-			{
-				Name:   govtypes.ModuleName,
-				Config: appconfig.WrapAny(&govmodulev1.Module{}),
 			},
 			{
 				Name:   crisistypes.ModuleName,

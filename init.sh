@@ -25,11 +25,11 @@ ignite chain build
 # network.
 
 # Mocha
-# DA_BLOCK_HEIGHT=$(curl https://rpc-mocha.pops.one/block |jq -r '.result.block.header.height')
-# AUTH_TOKEN=$(celestia light auth write --p2p.network mocha)
+DA_BLOCK_HEIGHT=$(curl public-celestia-mocha4-consensus.numia.xyz:26657/block |jq -r '.result.block.header.height')
+AUTH_TOKEN=$(celestia light auth write --p2p.network mocha)
 # Arabica
-DA_BLOCK_HEIGHT=$(curl https://rpc.celestia-arabica-11.com/block |jq -r '.result.block.header.height')
-AUTH_TOKEN=$(celestia light auth write --p2p.network arabica)
+#DA_BLOCK_HEIGHT=$(curl https://rpc.celestia-arabica-11.com/block |jq -r '.result.block.header.height')
+#AUTH_TOKEN=$(celestia light auth write --p2p.network arabica)
 
 echo -e "\n Your DA_BLOCK_HEIGHT is $DA_BLOCK_HEIGHT \n"
 echo -e "\n Your DA AUTH_TOKEN is $AUTH_TOKEN \n"
