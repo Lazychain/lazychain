@@ -9,8 +9,7 @@ BINARY=slothchaind
 KEY_NAME=slothy
 TOKEN_AMOUNT="10000000000000000000000000ulazy"
 STAKING_AMOUNT=1000000000ulazy
-CHAINFLAG="--chain-id ${CHAIN_ID}"
-TXFLAG="--chain-id ${CHAIN_ID} --gas-prices 0ulazy --gas auto --gas-adjustment 1.3"
+RELAYER_ADDRESS=lazy1avl4q6s02pss5q2ftrkjqaft3jk75q4ldesnwe
 
 echo -e "\n Deleting existing $BINARY data... \n"
 rm -rf "$HOME""/.slothchain"
@@ -55,6 +54,7 @@ $BINARY keys add $KEY_NAME --keyring-backend test
 
 # add a genesis account
 $BINARY genesis add-genesis-account $KEY_NAME $TOKEN_AMOUNT --keyring-backend test
+$BINARY genesis add-genesis-account $RELAYER_ADDRESS 0ulazy
 
 # set the staking amounts in the genesis transaction
 $BINARY genesis gentx $KEY_NAME $STAKING_AMOUNT --chain-id $CHAIN_ID --keyring-backend test
@@ -73,7 +73,8 @@ jq --argjson pubKey "$PUB_KEY" '.consensus["validators"]=[{"address": "'$ADDRESS
 echo "DA_BLOCK_HEIGHT=$DA_BLOCK_HEIGHT" >> restart-$BINARY.sh
 echo "AUTH_TOKEN=$AUTH_TOKEN" >> restart-$BINARY.sh
 
-echo "$BINARY start --rollkit.lazy_aggregator --rollkit.aggregator --rollkit.da_auth_token=\$AUTH_TOKEN --rollkit.da_namespace 00000000000000000000000000000000000000000008e5f679bf7116cb --rollkit.da_start_height \$DA_BLOCK_HEIGHT --rpc.laddr tcp://127.0.0.1:26657 --grpc.address 127.0.0.1:9290 --p2p.laddr \"0.0.0.0:26656\" --minimum-gas-prices="0.025ulazy"  --api.enable --api.enabled-unsafe-cors" >> restart-$BINARY.sh
+echo "$BINARY start --rollkit.lazy_aggregator --rollkit.aggregator --rollkit.da_auth_token=\$AUTH_TOKEN --rollkit.da_namespace 00000000000000000000000000000000000000000008e5f679bf7116cb --rollkit.da_start_height \$DA_BLOCK_HEIGHT --rpc.laddr tcp://127.0.0.1:26657 --grpc.address 127.0.0.1:9290 --p2p.laddr \"0.0.0.0:26656\" --minimum-gas-prices="0ulazy"  --api.enable --api.enabled-unsafe-cors" >> restart-$BINARY.sh
 
 # start the chain
-$BINARY start --rollkit.lazy_aggregator --rollkit.aggregator --rollkit.da_auth_token=$AUTH_TOKEN --rollkit.da_namespace 00000000000000000000000000000000000000000008e5f679bf7116cb --rollkit.da_start_height $DA_BLOCK_HEIGHT --rpc.laddr tcp://127.0.0.1:26657 --grpc.address 127.0.0.1:9290 --p2p.laddr "0.0.0.0:26656" --minimum-gas-prices="0.025ulazy" --api.enable --api.enabled-unsafe-cors
+# removed temporarily --rollkit.lazy_aggregator
+$BINARY start --rollkit.aggregator --rollkit.da_auth_token=$AUTH_TOKEN --rollkit.da_namespace 00000000000000000000000000000000000000000008e5f679bf7116cb --rollkit.da_start_height $DA_BLOCK_HEIGHT --rpc.laddr tcp://127.0.0.1:26657 --grpc.address 127.0.0.1:9290 --p2p.laddr "0.0.0.0:26656" --minimum-gas-prices="0ulazy" --api.enable --api.enabled-unsafe-cors

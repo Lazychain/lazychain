@@ -96,7 +96,22 @@ func NewRootCmd() *cobra.Command {
 			customAppTemplate, customAppConfig := initAppConfig()
 			customCMTConfig := initCometBFTConfig()
 
-			return server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customCMTConfig)
+			if err := server.InterceptConfigsPreRunHandler(cmd, customAppTemplate, customAppConfig, customCMTConfig); err != nil {
+				return err
+			}
+
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			serverCtx.Logger, err = CreateLazyLogger(serverCtx, os.Stderr)
+			if err != nil {
+				return err
+			}
+
+			if cmd.Name() == "start" {
+				serverCtx.Logger.Info("LM 🦥")
+				serverCtx.Logger.Info("💤 Starting chain... ")
+			}
+
+			return nil
 		},
 	}
 

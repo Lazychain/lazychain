@@ -1,6 +1,7 @@
 package app
 
 import (
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
 	"io"
 	"os"
 	"path/filepath"
@@ -35,6 +36,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	_ "github.com/cosmos/cosmos-sdk/x/auth/vesting" // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/authz/module" // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/bank"         // import for side-effects
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	_ "github.com/cosmos/cosmos-sdk/x/consensus" // import for side-effects
@@ -109,6 +111,7 @@ type App struct {
 	CrisisKeeper         *crisiskeeper.Keeper
 	UpgradeKeeper        *upgradekeeper.Keeper
 	ParamsKeeper         paramskeeper.Keeper
+	AuthzKeeper          authzkeeper.Keeper
 	EvidenceKeeper       evidencekeeper.Keeper
 	FeeGrantKeeper       feegrantkeeper.Keeper
 	CircuitBreakerKeeper circuitkeeper.Keeper
@@ -257,6 +260,7 @@ func New(
 		&app.CrisisKeeper,
 		&app.UpgradeKeeper,
 		&app.ParamsKeeper,
+		&app.AuthzKeeper,
 		&app.EvidenceKeeper,
 		&app.FeeGrantKeeper,
 		&app.CircuitBreakerKeeper,

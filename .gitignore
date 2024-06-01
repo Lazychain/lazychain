@@ -8,4 +8,9 @@ release/
 *.log
 *.ign
 
+cw-ics721/
+cw-nfts/
+
+artifacts/
+build/
 restart-slothchaind.sh
