@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"github.com/CosmWasm/wasmd/x/wasm"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/module/testutil"
+	sdktestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	interchaintestrelayer "github.com/strangelove-ventures/interchaintest/v8/relayer"
 	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
+	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	testifysuite "github.com/stretchr/testify/suite"
 	"go.uber.org/zap/zaptest"
 	"strings"
@@ -18,30 +19,35 @@ import (
 
 // Not const because we need to give them as pointers later
 var (
-	slothVals         = 1
-	slothFullNodes    = 0
-	stargazeVals      = 1
-	stargazeFullNodes = 0
+	slothVals          = 1
+	slothFullNodes     = 0
+	stargazeVals       = 1
+	stargazeFullNodes  = 0
+	celestialVals      = 1
+	celestialFullNodes = 0
 
 	votingPeriod     = "15s"
 	maxDepositPeriod = "10s"
 
-	slothChainId = "slothtestchain-1"
-	hubChainID   = "stargazetest-1"
+	slothChainId    = "slothtestchain-1"
+	sgChainID       = "stargazetest-1"
+	celestiaChainID = "celestiatest-1"
 )
 
 type E2ETestSuite struct {
 	testifysuite.Suite
 
-	ctx         context.Context
-	ic          *interchaintest.Interchain
-	network     string
-	r           ibc.Relayer
-	eRep        *testreporter.RelayerExecReporter
-	initialPath string
+	ctx               context.Context
+	ic                *interchaintest.Interchain
+	network           string
+	r                 ibc.Relayer
+	eRep              *testreporter.RelayerExecReporter
+	sgSlothPath       string
+	celestiaSlothPath string
 
 	slothchain *cosmos.CosmosChain
 	stargaze   *cosmos.CosmosChain
+	celestia   *cosmos.CosmosChain
 }
 
 func (s *E2ETestSuite) SetupSuite() {
@@ -52,10 +58,11 @@ func (s *E2ETestSuite) SetupSuite() {
 	s.ic = ic
 	cf := s.getChainFactory()
 	chains, err := cf.Chains(s.T().Name())
-	slothchain, stargaze := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain)
+	slothchain, stargaze, celestia := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain)
 	s.NoError(err)
 	s.slothchain = slothchain
 	s.stargaze = stargaze
+	s.celestia = celestia
 
 	for _, chain := range chains {
 		ic.AddChain(chain)
@@ -73,12 +80,19 @@ func (s *E2ETestSuite) SetupSuite() {
 	s.r = r
 
 	ic.AddRelayer(r, "relayer")
-	s.initialPath = "ibc-path"
+	s.sgSlothPath = "sg-sloth-path"
 	ic.AddLink(interchaintest.InterchainLink{
 		Chain1:  stargaze,
 		Chain2:  slothchain,
 		Relayer: r,
-		Path:    s.initialPath,
+		Path:    s.sgSlothPath,
+	})
+	s.celestiaSlothPath = "celestia-sloth-path"
+	ic.AddLink(interchaintest.InterchainLink{
+		Chain1:  celestia,
+		Chain2:  slothchain,
+		Relayer: r,
+		Path:    s.celestiaSlothPath,
 	})
 
 	rep := testreporter.NewNopReporter()
@@ -89,9 +103,15 @@ func (s *E2ETestSuite) SetupSuite() {
 		TestName:         s.T().Name(),
 		Client:           client,
 		NetworkID:        network,
-		SkipPathCreation: false,
+		SkipPathCreation: true,
 	})
 	s.NoError(err)
+
+	// For some reason automated path creation in Build didn't work when doing two paths 🤷
+	s.NoError(s.r.GeneratePath(s.ctx, s.eRep, s.stargaze.Config().ChainID, s.slothchain.Config().ChainID, s.sgSlothPath))
+	s.NoError(s.r.GeneratePath(s.ctx, s.eRep, s.celestia.Config().ChainID, s.slothchain.Config().ChainID, s.celestiaSlothPath))
+	s.NoError(s.r.LinkPath(s.ctx, s.eRep, s.celestiaSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
+	s.NoError(s.r.LinkPath(s.ctx, s.eRep, s.sgSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
 
 	s.T().Cleanup(func() {
 		_ = ic.Close()
@@ -199,45 +219,64 @@ da_address = \"http://%s:%s\"" >> /var/cosmos-chain/slothchain/config/config.tom
 			ChainName: "stargaze",
 			Version:   "v13.0.0",
 			ChainConfig: ibc.ChainConfig{
-				Type:                "cosmos",
-				Name:                "stargaze",
-				ChainID:             hubChainID,
-				Bin:                 "starsd",
-				Bech32Prefix:        "stars",
-				Denom:               "stars",
-				CoinType:            "118",
-				GasPrices:           "0stars",
-				GasAdjustment:       2.0,
-				TrustingPeriod:      "112h",
-				NoHostMount:         false,
-				ConfigFileOverrides: nil,
-				EncodingConfig:      getEncodingConfig(),
-				ModifyGenesis: cosmos.ModifyGenesis([]cosmos.GenesisKV{
-					{
-						Key:   "app_state.gov.params.voting_period",
-						Value: votingPeriod,
-					},
-					{
-						Key:   "app_state.gov.params.max_deposit_period",
-						Value: maxDepositPeriod,
-					},
-					{
-						Key:   "app_state.gov.params.min_deposit.0.denom",
-						Value: "stars",
-					},
-					{
-						Key:   "app_state.gov.params.min_deposit.0.amount",
-						Value: "1",
-					},
-				}),
+				Type:           "cosmos",
+				Name:           "stargaze",
+				ChainID:        sgChainID,
+				CoinType:       "118",
+				GasPrices:      "0stars",
+				GasAdjustment:  2.0,
+				EncodingConfig: getEncodingConfig(),
 			},
 			NumValidators: &stargazeVals,
 			NumFullNodes:  &stargazeFullNodes,
 		},
+		{
+			Name:      "celestia",
+			ChainName: "celestia",
+			Version:   "v1.9.0",
+			ChainConfig: ibc.ChainConfig{
+				Type:    "cosmos",
+				Name:    "celestia",
+				ChainID: celestiaChainID,
+				Images: []ibc.DockerImage{
+					{
+						Repository: "ghcr.io/strangelove-ventures/heighliner/celestia",
+						Version:    "v1.9.0",
+						UidGid:     "1025:1025",
+					},
+				},
+				Bin:            "celestia-appd",
+				Bech32Prefix:   "celestia",
+				Denom:          "utia",
+				CoinType:       "118",
+				GasPrices:      "0utia",
+				GasAdjustment:  2.0,
+				TrustingPeriod: "112h",
+				NoHostMount:    false,
+				ConfigFileOverrides: map[string]any{
+					"config/config.toml": testutil.Toml{
+						"storage": testutil.Toml{
+							"discard_abci_responses": false,
+						},
+						"tx_index": testutil.Toml{
+							"indexer": "kv",
+						},
+					},
+					"config/app.toml": testutil.Toml{
+						"grpc": testutil.Toml{
+							"enable": true,
+						},
+					},
+				},
+				EncodingConfig: getEncodingConfig(),
+			},
+			NumValidators: &celestialVals,
+			NumFullNodes:  &celestialFullNodes,
+		},
 	})
 }
 
-func getEncodingConfig() *testutil.TestEncodingConfig {
+func getEncodingConfig() *sdktestutil.TestEncodingConfig {
 	cfg := cosmos.DefaultEncoding()
 
 	// register custom types

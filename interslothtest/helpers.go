@@ -27,8 +27,8 @@ func (s *E2ETestSuite) DeployNFTSetup(sgUser ibc.Wallet, slothUser ibc.Wallet) N
 	sgICS721Contract := s.DeployICS721(s.stargaze, sgUser.KeyName(), sgCW721CodeID)
 	slothChainICS721Contract := s.DeployICS721(s.slothchain, slothUser.KeyName(), slothCW721CodeID)
 
-	ics721PathName := "ics721"
-	s.NoError(s.r.GeneratePath(s.ctx, s.eRep, s.stargaze.Config().ChainID, s.slothchain.Config().ChainID, ics721PathName))
+	//ics721PathName := "ics721"
+	//s.NoError(s.r.GeneratePath(s.ctx, s.eRep, s.stargaze.Config().ChainID, s.slothchain.Config().ChainID, ics721PathName))
 
 	sgPortName := fmt.Sprintf("wasm.%s", sgICS721Contract)
 	slothPortName := fmt.Sprintf("wasm.%s", slothChainICS721Contract)
@@ -39,7 +39,7 @@ func (s *E2ETestSuite) DeployNFTSetup(sgUser ibc.Wallet, slothUser ibc.Wallet) N
 		Version:        "ics721-1",
 	}
 	clientOpts := ibc.CreateClientOptions{}
-	s.NoError(s.r.LinkPath(s.ctx, s.eRep, ics721PathName, channelOpts, clientOpts))
+	s.NoError(s.r.LinkPath(s.ctx, s.eRep, s.sgSlothPath, channelOpts, clientOpts))
 
 	channels, err := s.r.GetChannels(s.ctx, s.eRep, s.stargaze.Config().ChainID)
 	s.NoError(err)
@@ -116,7 +116,7 @@ func (s *E2ETestSuite) TransferSlothToSlothChain(nftSetup NFTSetup, from ibc.Wal
 	_, err := s.stargaze.ExecuteContract(s.ctx, from.KeyName(), nftSetup.SlothContract, transferMsg, "--gas", "auto", "--gas-adjustment", "2")
 	s.NoError(err)
 
-	s.NoError(testutil.WaitForBlocks(s.ctx, 5, s.stargaze, s.slothchain))
+	s.NoError(testutil.WaitForBlocks(s.ctx, 10, s.stargaze, s.slothchain, s.celestia))
 
 	type Response struct {
 		Data [][]string `json:"data"`

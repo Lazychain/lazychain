@@ -22,7 +22,7 @@ func (s *ICS721TestSuite) TestICS721() {
 
 	nftSetup := s.DeployNFTSetup(sgUser, slothUser)
 
-	s.NoError(s.r.StartRelayer(s.ctx, s.eRep, s.initialPath))
+	s.NoError(s.r.StartRelayer(s.ctx, s.eRep, s.sgSlothPath))
 	s.NoError(testutil.WaitForBlocks(s.ctx, 5, s.stargaze, s.slothchain))
 
 	classID, slothChainCW721 := s.TransferSlothToSlothChain(
