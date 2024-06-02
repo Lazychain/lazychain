@@ -21,17 +21,17 @@ import (
 var (
 	slothVals          = 1
 	slothFullNodes     = 0
-	stargazeVals       = 1
-	stargazeFullNodes  = 0
 	celestialVals      = 1
 	celestialFullNodes = 0
+	stargazeVals       = 1
+	stargazeFullNodes  = 0
 
 	votingPeriod     = "15s"
 	maxDepositPeriod = "10s"
 
 	slothChainId    = "slothtestchain-1"
-	sgChainID       = "stargazetest-1"
 	celestiaChainID = "celestiatest-1"
+	sgChainID       = "stargazetest-1"
 )
 
 type E2ETestSuite struct {
@@ -42,12 +42,12 @@ type E2ETestSuite struct {
 	network           string
 	r                 ibc.Relayer
 	eRep              *testreporter.RelayerExecReporter
-	sgSlothPath       string
 	celestiaSlothPath string
+	sgSlothPath       string
 
 	slothchain *cosmos.CosmosChain
-	stargaze   *cosmos.CosmosChain
 	celestia   *cosmos.CosmosChain
+	stargaze   *cosmos.CosmosChain
 }
 
 func (s *E2ETestSuite) SetupSuite() {
@@ -58,11 +58,11 @@ func (s *E2ETestSuite) SetupSuite() {
 	s.ic = ic
 	cf := s.getChainFactory()
 	chains, err := cf.Chains(s.T().Name())
-	slothchain, stargaze, celestia := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain)
+	slothchain, celestia, stargaze := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain)
 	s.NoError(err)
 	s.slothchain = slothchain
-	s.stargaze = stargaze
 	s.celestia = celestia
+	s.stargaze = stargaze
 
 	for _, chain := range chains {
 		ic.AddChain(chain)
@@ -108,9 +108,10 @@ func (s *E2ETestSuite) SetupSuite() {
 	s.NoError(err)
 
 	// For some reason automated path creation in Build didn't work when doing two paths 🤷
-	s.NoError(s.r.GeneratePath(s.ctx, s.eRep, s.stargaze.Config().ChainID, s.slothchain.Config().ChainID, s.sgSlothPath))
 	s.NoError(s.r.GeneratePath(s.ctx, s.eRep, s.celestia.Config().ChainID, s.slothchain.Config().ChainID, s.celestiaSlothPath))
 	s.NoError(s.r.LinkPath(s.ctx, s.eRep, s.celestiaSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
+
+	s.NoError(s.r.GeneratePath(s.ctx, s.eRep, s.stargaze.Config().ChainID, s.slothchain.Config().ChainID, s.sgSlothPath))
 	s.NoError(s.r.LinkPath(s.ctx, s.eRep, s.sgSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
 
 	s.T().Cleanup(func() {
@@ -144,16 +145,16 @@ func (s *E2ETestSuite) getChainFactory() *interchaintest.BuiltinChainFactory {
 				},
 				Bin:                 "slothchaind",
 				Bech32Prefix:        "lazy",
-				Denom:               "ulazy",
+				Denom:               "useq",
 				CoinType:            "118",
-				GasPrices:           "0ulazy",
+				GasPrices:           "0ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA",
 				GasAdjustment:       2.0,
 				TrustingPeriod:      "112h",
 				NoHostMount:         false,
 				ConfigFileOverrides: nil,
 				EncodingConfig:      getEncodingConfig(),
 				ModifyGenesisAmounts: func(_ int) (sdk.Coin, sdk.Coin) {
-					return sdk.NewInt64Coin("ulazy", 10_000_000_000_000), sdk.NewInt64Coin("ulazy", 1_000_000_000)
+					return sdk.NewInt64Coin("useq", 10_000_000_000_000), sdk.NewInt64Coin("useq", 1_000_000_000)
 				},
 				ModifyGenesis: func(config ibc.ChainConfig, bytes []byte) ([]byte, error) {
 					addressBz, _, err := s.slothchain.Validators[0].Exec(s.ctx, []string{"jq", "-r", ".address", "/var/cosmos-chain/slothchain/config/priv_validator_key.json"}, []string{})
@@ -215,22 +216,6 @@ da_address = \"http://%s:%s\"" >> /var/cosmos-chain/slothchain/config/config.tom
 			NumFullNodes:  &slothFullNodes,
 		},
 		{
-			Name:      "stargaze",
-			ChainName: "stargaze",
-			Version:   "v13.0.0",
-			ChainConfig: ibc.ChainConfig{
-				Type:           "cosmos",
-				Name:           "stargaze",
-				ChainID:        sgChainID,
-				CoinType:       "118",
-				GasPrices:      "0stars",
-				GasAdjustment:  2.0,
-				EncodingConfig: getEncodingConfig(),
-			},
-			NumValidators: &stargazeVals,
-			NumFullNodes:  &stargazeFullNodes,
-		},
-		{
 			Name:      "celestia",
 			ChainName: "celestia",
 			Version:   "v1.9.0",
@@ -272,6 +257,22 @@ da_address = \"http://%s:%s\"" >> /var/cosmos-chain/slothchain/config/config.tom
 			},
 			NumValidators: &celestialVals,
 			NumFullNodes:  &celestialFullNodes,
+		},
+		{
+			Name:      "stargaze",
+			ChainName: "stargaze",
+			Version:   "v13.0.0",
+			ChainConfig: ibc.ChainConfig{
+				Type:           "cosmos",
+				Name:           "stargaze",
+				ChainID:        sgChainID,
+				CoinType:       "118",
+				GasPrices:      "0stars",
+				GasAdjustment:  2.0,
+				EncodingConfig: getEncodingConfig(),
+			},
+			NumValidators: &stargazeVals,
+			NumFullNodes:  &stargazeFullNodes,
 		},
 	})
 }

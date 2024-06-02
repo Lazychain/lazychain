@@ -1,7 +1,8 @@
 package interslothtest
 
 import (
-	"encoding/hex"
+	"fmt"
+	"go.uber.org/zap/zaptest"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -12,22 +13,16 @@ import (
 	testifysuite "github.com/stretchr/testify/suite"
 )
 
-type SmokeTestSuite struct {
+type ICS20TestSuite struct {
 	E2ETestSuite
 }
 
-func TestSmokeTestSuite(t *testing.T) {
-	testifysuite.Run(t, new(SmokeTestSuite))
+func TestICS20TestSuite(t *testing.T) {
+	testifysuite.Run(t, new(ICS20TestSuite))
 }
 
-func (s *SmokeTestSuite) TestChainStarts() {
+func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 	s.NotNil(s.ic)
-
-	s.NoError(testutil.WaitForBlocks(s.ctx, 5, s.slothchain, s.stargaze, s.celestia))
-}
-
-func (s *SmokeTestSuite) TestIBCTokenTransfers() {
-	s.NoError(testutil.WaitForBlocks(s.ctx, 5, s.slothchain, s.stargaze, s.celestia))
 
 	slothUser, err := s.slothchain.BuildWallet(s.ctx, "slothUser", "")
 	s.NoError(err)
@@ -35,7 +30,6 @@ func (s *SmokeTestSuite) TestIBCTokenTransfers() {
 	celestiaUser := interchaintest.GetAndFundTestUsers(s.T(), s.ctx, s.T().Name(), math.NewInt(10_000_000_000), s.celestia)[0]
 
 	s.NoError(s.r.StartRelayer(s.ctx, s.eRep, s.sgSlothPath, s.celestiaSlothPath))
-
 	s.T().Cleanup(
 		func() {
 			err := s.r.StopRelayer(s.ctx, s.eRep)
@@ -77,16 +71,7 @@ func (s *SmokeTestSuite) TestIBCTokenTransfers() {
 		Denom:   s.celestia.Config().Denom,
 		Amount:  transferAmount,
 	}
-	// Different versions makes the helper methods fail, so the celestia transfer is done more manually:
-	txHash, err := s.celestia.GetNode().SendIBCTransfer(s.ctx, celestiaToSlothChannel.ChannelID, celestiaUser.KeyName(), celestiaTransfer, ibc.TransferOptions{})
-	s.NoError(err)
-	rpcNode, err := s.celestia.GetNode().CliContext().GetNode()
-	s.NoError(err)
-	hash, err := hex.DecodeString(txHash)
-	s.NoError(err)
-	resTx, err := rpcNode.Tx(s.ctx, hash, false)
-	s.NoError(err)
-	s.Equal(uint32(0), resTx.TxResult.Code)
+	s.CelestiaIBCTransfer(celestiaToSlothChannel.ChannelID, celestiaUser.KeyName(), celestiaTransfer)
 
 	s.NoError(testutil.WaitForBlocks(s.ctx, 5, s.slothchain, s.stargaze, s.celestia))
 
@@ -145,4 +130,84 @@ func (s *SmokeTestSuite) TestIBCTokenTransfers() {
 	slothTiaBalanceFinal, err := s.slothchain.GetBalance(s.ctx, slothUserAddr, tiaSrcIBCDenom)
 	s.NoError(err)
 	s.Equal(math.NewInt(0), slothTiaBalanceFinal)
+}
+
+func (s *ICS20TestSuite) TestTIAGasToken() {
+	celestiaUser := interchaintest.GetAndFundTestUsers(s.T(), s.ctx, s.T().Name(), math.NewInt(10_000_000_000), s.celestia)[0]
+	slothUser, err := s.slothchain.BuildWallet(s.ctx, "slothUser", "")
+	s.NoError(err)
+
+	// Transfer TIA to relayer wallet + our user
+	relayerWallet, found := s.r.GetWallet(s.slothchain.Config().ChainID)
+	s.Require().True(found)
+
+	s.NoError(s.r.StartRelayer(s.ctx, s.eRep, s.sgSlothPath, s.celestiaSlothPath))
+	s.T().Cleanup(
+		func() {
+			err := s.r.StopRelayer(s.ctx, s.eRep)
+			if err != nil {
+				s.T().Logf("an error occurred while stopping the relayer: %s", err)
+			}
+		},
+	)
+
+	celestiaToSlothChannel, err := ibc.GetTransferChannel(s.ctx, s.r, s.eRep, s.celestia.Config().ChainID, s.slothchain.Config().ChainID)
+	s.NoError(err)
+
+	var transferAmount = math.NewInt(1_000_000_00)
+	celestiaTransfer := ibc.WalletAmount{
+		Address: relayerWallet.FormattedAddress(),
+		Denom:   s.celestia.Config().Denom,
+		Amount:  transferAmount,
+	}
+	s.CelestiaIBCTransfer(celestiaToSlothChannel.ChannelID, celestiaUser.KeyName(), celestiaTransfer)
+
+	celestiaTransfer = ibc.WalletAmount{
+		Address: slothUser.FormattedAddress(),
+		Denom:   s.celestia.Config().Denom,
+		Amount:  transferAmount,
+	}
+	s.CelestiaIBCTransfer(celestiaToSlothChannel.ChannelID, celestiaUser.KeyName(), celestiaTransfer)
+
+	s.NoError(testutil.WaitForBlocks(s.ctx, 5, s.slothchain, s.stargaze, s.celestia))
+
+	// Change minimum gas price
+	s.NoError(s.slothchain.StopAllNodes(s.ctx))
+	for _, n := range s.slothchain.Nodes() {
+		s.NoError(testutil.ModifyTomlConfigFile(
+			s.ctx,
+			zaptest.NewLogger(s.T()),
+			n.DockerClient,
+			s.T().Name(),
+			n.VolumeName,
+			"config/app.toml",
+			testutil.Toml{
+				"minimum-gas-prices": "0.025ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA",
+			},
+		))
+	}
+	s.NoError(s.slothchain.StartAllNodes(s.ctx))
+
+	s.NoError(testutil.WaitForBlocks(s.ctx, 5, s.slothchain, s.stargaze, s.celestia))
+
+	newWallet, err := s.slothchain.BuildWallet(s.ctx, "newWallet", "")
+	s.NoError(err)
+	_, err = s.slothchain.GetNode().ExecTx(s.ctx,
+		slothUser.KeyName(), "bank", "send", slothUser.KeyName(), newWallet.FormattedAddress(),
+		"42000000ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA",
+		"--gas-prices", "0.025ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA",
+	)
+	s.NoError(err)
+
+	slothUserBal, err := s.slothchain.GetBalance(s.ctx, slothUser.FormattedAddress(), "ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA")
+	s.NoError(err)
+	newWalletBal, err := s.slothchain.GetBalance(s.ctx, newWallet.FormattedAddress(), "ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA")
+	s.NoError(err)
+
+	fmt.Println(slothUserBal.String())
+
+	s.Equal(math.NewInt(42000000), newWalletBal)
+	// Because gas
+	s.Less(slothUserBal.Int64(), int64(58_000_000))
+	s.Greater(slothUserBal.Int64(), int64(57_000_000))
 }

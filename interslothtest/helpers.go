@@ -2,6 +2,7 @@ package interslothtest
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
@@ -139,4 +140,18 @@ func (s *E2ETestSuite) AllNFTs(contractAddress string) []string {
 	s.NoError(s.slothchain.QueryContract(s.ctx, contractAddress, "{\"all_tokens\": {}}", &resp))
 
 	return resp.Data.Tokens
+}
+
+// Different versions makes the normal helper methods fail, so the celestia transfer is done more manually:
+func (s *E2ETestSuite) CelestiaIBCTransfer(channelID string, celestiaUserKeyName string, celestiaTransfer ibc.WalletAmount) {
+	// Different versions makes the helper methods fail, so the celestia transfer is done more manually:
+	txHash, err := s.celestia.GetNode().SendIBCTransfer(s.ctx, channelID, celestiaUserKeyName, celestiaTransfer, ibc.TransferOptions{})
+	s.NoError(err)
+	rpcNode, err := s.celestia.GetNode().CliContext().GetNode()
+	s.NoError(err)
+	hash, err := hex.DecodeString(txHash)
+	s.NoError(err)
+	resTx, err := rpcNode.Tx(s.ctx, hash, false)
+	s.NoError(err)
+	s.Equal(uint32(0), resTx.TxResult.Code)
 }
