@@ -1,15 +1,16 @@
-package interslothtest
+package ics721
 
 import (
 	"cosmossdk.io/math"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	testifysuite "github.com/stretchr/testify/suite"
+	"interslothtest/utils"
 	"testing"
 )
 
 type ICS721TestSuite struct {
-	E2ETestSuite
+	utils.E2ETestSuite
 }
 
 func TestICS721TestSuite(t *testing.T) {
@@ -17,13 +18,13 @@ func TestICS721TestSuite(t *testing.T) {
 }
 
 func (s *ICS721TestSuite) TestICS721() {
-	users := interchaintest.GetAndFundTestUsers(s.T(), s.ctx, s.T().Name(), math.NewInt(10_000_000_000), s.stargaze, s.slothchain)
+	users := interchaintest.GetAndFundTestUsers(s.T(), s.Ctx, s.T().Name(), math.NewInt(10_000_000_000), s.Stargaze, s.Slothchain)
 	sgUser, slothUser := users[0], users[1]
 
 	nftSetup := s.DeployNFTSetup(sgUser, slothUser)
 
-	s.NoError(s.r.StartRelayer(s.ctx, s.eRep, s.sgSlothPath))
-	s.NoError(testutil.WaitForBlocks(s.ctx, 5, s.stargaze, s.slothchain))
+	s.NoError(s.Relayer.StartRelayer(s.Ctx, s.RelayerExecRep, s.StargazeSlothPath))
+	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.Stargaze, s.Slothchain))
 
 	classID, slothChainCW721 := s.TransferSlothToSlothChain(
 		nftSetup,

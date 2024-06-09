@@ -1,4 +1,4 @@
-package interslothtest
+package utils
 
 import (
 	"context"
@@ -37,32 +37,32 @@ var (
 type E2ETestSuite struct {
 	testifysuite.Suite
 
-	ctx               context.Context
-	ic                *interchaintest.Interchain
-	network           string
-	r                 ibc.Relayer
-	eRep              *testreporter.RelayerExecReporter
-	celestiaSlothPath string
-	sgSlothPath       string
+	Ctx               context.Context
+	Interchain        *interchaintest.Interchain
+	Network           string
+	Relayer           ibc.Relayer
+	RelayerExecRep    *testreporter.RelayerExecReporter
+	CelestiaSlothPath string
+	StargazeSlothPath string
 
-	slothchain *cosmos.CosmosChain
-	celestia   *cosmos.CosmosChain
-	stargaze   *cosmos.CosmosChain
+	Slothchain *cosmos.CosmosChain
+	Celestia   *cosmos.CosmosChain
+	Stargaze   *cosmos.CosmosChain
 }
 
 func (s *E2ETestSuite) SetupSuite() {
-	s.ctx = context.Background()
+	s.Ctx = context.Background()
 
 	// Create a new Interchain object which describes the chains, relayers, and IBC connections we want to use
 	ic := interchaintest.NewInterchain()
-	s.ic = ic
+	s.Interchain = ic
 	cf := s.getChainFactory()
 	chains, err := cf.Chains(s.T().Name())
 	slothchain, celestia, stargaze := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain)
 	s.NoError(err)
-	s.slothchain = slothchain
-	s.celestia = celestia
-	s.stargaze = stargaze
+	s.Slothchain = slothchain
+	s.Celestia = celestia
+	s.Stargaze = stargaze
 
 	for _, chain := range chains {
 		ic.AddChain(chain)
@@ -77,29 +77,29 @@ func (s *E2ETestSuite) SetupSuite() {
 		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	)
 	r := rf.Build(s.T(), client, network)
-	s.r = r
+	s.Relayer = r
 
 	ic.AddRelayer(r, "relayer")
-	s.sgSlothPath = "sg-sloth-path"
+	s.StargazeSlothPath = "sg-sloth-path"
 	ic.AddLink(interchaintest.InterchainLink{
 		Chain1:  stargaze,
 		Chain2:  slothchain,
 		Relayer: r,
-		Path:    s.sgSlothPath,
+		Path:    s.StargazeSlothPath,
 	})
-	s.celestiaSlothPath = "celestia-sloth-path"
+	s.CelestiaSlothPath = "celestia-sloth-path"
 	ic.AddLink(interchaintest.InterchainLink{
 		Chain1:  celestia,
 		Chain2:  slothchain,
 		Relayer: r,
-		Path:    s.celestiaSlothPath,
+		Path:    s.CelestiaSlothPath,
 	})
 
 	rep := testreporter.NewNopReporter()
 	eRep := rep.RelayerExecReporter(s.T())
-	s.eRep = eRep
+	s.RelayerExecRep = eRep
 
-	err = ic.Build(s.ctx, eRep, interchaintest.InterchainBuildOptions{
+	err = ic.Build(s.Ctx, eRep, interchaintest.InterchainBuildOptions{
 		TestName:         s.T().Name(),
 		Client:           client,
 		NetworkID:        network,
@@ -108,11 +108,11 @@ func (s *E2ETestSuite) SetupSuite() {
 	s.NoError(err)
 
 	// For some reason automated path creation in Build didn't work when doing two paths 🤷
-	s.NoError(s.r.GeneratePath(s.ctx, s.eRep, s.celestia.Config().ChainID, s.slothchain.Config().ChainID, s.celestiaSlothPath))
-	s.NoError(s.r.LinkPath(s.ctx, s.eRep, s.celestiaSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
+	s.NoError(s.Relayer.GeneratePath(s.Ctx, s.RelayerExecRep, s.Celestia.Config().ChainID, s.Slothchain.Config().ChainID, s.CelestiaSlothPath))
+	s.NoError(s.Relayer.LinkPath(s.Ctx, s.RelayerExecRep, s.CelestiaSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
 
-	s.NoError(s.r.GeneratePath(s.ctx, s.eRep, s.stargaze.Config().ChainID, s.slothchain.Config().ChainID, s.sgSlothPath))
-	s.NoError(s.r.LinkPath(s.ctx, s.eRep, s.sgSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
+	s.NoError(s.Relayer.GeneratePath(s.Ctx, s.RelayerExecRep, s.Stargaze.Config().ChainID, s.Slothchain.Config().ChainID, s.StargazeSlothPath))
+	s.NoError(s.Relayer.LinkPath(s.Ctx, s.RelayerExecRep, s.StargazeSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
 
 	s.T().Cleanup(func() {
 		_ = ic.Close()
@@ -121,8 +121,8 @@ func (s *E2ETestSuite) SetupSuite() {
 
 func (s *E2ETestSuite) TearDownSuite() {
 	s.T().Log("tearing down e2e test suite")
-	if s.ic != nil {
-		_ = s.ic.Close()
+	if s.Interchain != nil {
+		_ = s.Interchain.Close()
 	}
 }
 
@@ -157,12 +157,12 @@ func (s *E2ETestSuite) getChainFactory() *interchaintest.BuiltinChainFactory {
 					return sdk.NewInt64Coin("useq", 10_000_000_000_000), sdk.NewInt64Coin("useq", 1_000_000_000)
 				},
 				ModifyGenesis: func(config ibc.ChainConfig, bytes []byte) ([]byte, error) {
-					addressBz, _, err := s.slothchain.Validators[0].Exec(s.ctx, []string{"jq", "-r", ".address", "/var/cosmos-chain/slothchain/config/priv_validator_key.json"}, []string{})
+					addressBz, _, err := s.Slothchain.Validators[0].Exec(s.Ctx, []string{"jq", "-r", ".address", "/var/cosmos-chain/slothchain/config/priv_validator_key.json"}, []string{})
 					if err != nil {
 						return nil, err
 					}
 					address := strings.TrimSuffix(string(addressBz), "\n")
-					pubKeyBz, _, err := s.slothchain.Validators[0].Exec(s.ctx, []string{"jq", "-r", ".pub_key.value", "/var/cosmos-chain/slothchain/config/priv_validator_key.json"}, []string{})
+					pubKeyBz, _, err := s.Slothchain.Validators[0].Exec(s.Ctx, []string{"jq", "-r", ".pub_key.value", "/var/cosmos-chain/slothchain/config/priv_validator_key.json"}, []string{})
 					if err != nil {
 						return nil, err
 					}
@@ -185,8 +185,8 @@ func (s *E2ETestSuite) getChainFactory() *interchaintest.BuiltinChainFactory {
 						},
 					}
 
-					name := s.slothchain.Sidecars[0].HostName()
-					_, _, err = s.slothchain.Validators[0].Exec(s.ctx, []string{"sh", "-c", fmt.Sprintf(`echo "[rollkit]
+					name := s.Slothchain.Sidecars[0].HostName()
+					_, _, err = s.Slothchain.Validators[0].Exec(s.Ctx, []string{"sh", "-c", fmt.Sprintf(`echo "[rollkit]
 da_address = \"http://%s:%s\"" >> /var/cosmos-chain/slothchain/config/config.toml`, name, "7980")}, []string{})
 					if err != nil {
 						return nil, err
