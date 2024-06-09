@@ -7,6 +7,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
+	"path"
 	"time"
 )
 
@@ -18,15 +19,15 @@ type NFTSetup struct {
 	SlothChainChannel        string
 }
 
-func (s *E2ETestSuite) DeployNFTSetup(sgUser ibc.Wallet, slothUser ibc.Wallet) NFTSetup {
-	sgCW721CodeID := s.DeployCW721(s.Stargaze, sgUser.KeyName())
-	slothCW721CodeID := s.DeployCW721(s.Slothchain, slothUser.KeyName())
+func (s *InterchainValues) DeployNFTSetup(sgUser ibc.Wallet, slothUser ibc.Wallet, artifactsPath string) NFTSetup {
+	sgCW721CodeID := s.DeployCW721(s.Stargaze, sgUser.KeyName(), artifactsPath)
+	slothCW721CodeID := s.DeployCW721(s.Slothchain, slothUser.KeyName(), artifactsPath)
 
 	slothContract := s.DeploySloths(slothCW721CodeID, sgUser)
 	s.MintSloths(slothContract, sgUser.KeyName(), sgUser.FormattedAddress(), []string{"1", "2", "3"})
 
-	sgICS721Contract := s.DeployICS721(s.Stargaze, sgUser.KeyName(), sgCW721CodeID)
-	slothChainICS721Contract := s.DeployICS721(s.Slothchain, slothUser.KeyName(), slothCW721CodeID)
+	sgICS721Contract := s.DeployICS721(s.Stargaze, sgUser.KeyName(), sgCW721CodeID, artifactsPath)
+	slothChainICS721Contract := s.DeployICS721(s.Slothchain, slothUser.KeyName(), slothCW721CodeID, artifactsPath)
 
 	//ics721PathName := "ics721"
 	//s.NoError(s.Relayer.GeneratePath(s.Ctx, s.RelayerExecRep, s.Stargaze.Config().ChainID, s.Slothchain.Config().ChainID, ics721PathName))
@@ -64,15 +65,17 @@ func (s *E2ETestSuite) DeployNFTSetup(sgUser ibc.Wallet, slothUser ibc.Wallet) N
 	}
 }
 
-func (s *E2ETestSuite) DeployCW721(chain *cosmos.CosmosChain, userKeyName string) string {
-	codeID, err := chain.StoreContract(s.Ctx, userKeyName, "../../artifacts/cw721_base.wasm", "--gas", "auto", "--gas-adjustment", "2")
+func (s *InterchainValues) DeployCW721(chain *cosmos.CosmosChain, userKeyName string, artifactsFolderPath string) string {
+	contractPath := path.Join(artifactsFolderPath, "cw721_base.wasm")
+	codeID, err := chain.StoreContract(s.Ctx, userKeyName, contractPath, "--gas", "auto", "--gas-adjustment", "2")
 	s.NoError(err)
 
 	return codeID
 }
 
-func (s *E2ETestSuite) DeployICS721(chain *cosmos.CosmosChain, userKeyName string, cw721CodeID string) string {
-	sgICS721CodeID, err := chain.StoreContract(s.Ctx, userKeyName, "../../artifacts/ics721_base.wasm")
+func (s *InterchainValues) DeployICS721(chain *cosmos.CosmosChain, userKeyName string, cw721CodeID string, artifactsFolderPath string) string {
+	contractPath := path.Join(artifactsFolderPath, "ics721_base.wasm")
+	sgICS721CodeID, err := chain.StoreContract(s.Ctx, userKeyName, contractPath, "--gas", "auto", "--gas-adjustment", "2")
 	s.NoError(err)
 
 	sgICS721InstantiateMsg := fmt.Sprintf("{\"cw721_base_code_id\": %s}", cw721CodeID)
@@ -82,7 +85,7 @@ func (s *E2ETestSuite) DeployICS721(chain *cosmos.CosmosChain, userKeyName strin
 	return sgICS721Contract
 }
 
-func (s *E2ETestSuite) DeploySloths(slothContract string, sgUser ibc.Wallet) string {
+func (s *InterchainValues) DeploySloths(slothContract string, sgUser ibc.Wallet) string {
 	slothCW721InstantiateMsg := fmt.Sprintf("{\"name\": \"Celestine Sloth Society\", \"symbol\": \"CSS\", \"minter\": \"%s\"}", sgUser.FormattedAddress())
 	slothCW721Contract, err := s.Stargaze.InstantiateContract(s.Ctx, sgUser.KeyName(), slothContract, slothCW721InstantiateMsg, true, "--gas", "auto", "--gas-adjustment", "2")
 	s.NoError(err)
@@ -90,7 +93,7 @@ func (s *E2ETestSuite) DeploySloths(slothContract string, sgUser ibc.Wallet) str
 	return slothCW721Contract
 }
 
-func (s *E2ETestSuite) MintSloths(cw721Contract string, sgUserKeyName string, mintTo string, tokenIds []string) {
+func (s *InterchainValues) MintSloths(cw721Contract string, sgUserKeyName string, mintTo string, tokenIds []string) {
 	for _, tokenId := range tokenIds {
 		slothCW721MintMsg := fmt.Sprintf("{\"mint\": {\"token_id\": \"%s\", \"owner\": \"%s\"}}", tokenId, mintTo)
 		_, err := s.Stargaze.ExecuteContract(s.Ctx, sgUserKeyName, cw721Contract, slothCW721MintMsg)
@@ -98,7 +101,7 @@ func (s *E2ETestSuite) MintSloths(cw721Contract string, sgUserKeyName string, mi
 	}
 }
 
-func (s *E2ETestSuite) TransferSlothToSlothChain(nftSetup NFTSetup, from ibc.Wallet, to ibc.Wallet, tokenId string) (classID string, contractAddress string) {
+func (s *InterchainValues) TransferSlothToSlothChain(nftSetup NFTSetup, from ibc.Wallet, to ibc.Wallet, tokenId string) (classID string, contractAddress string) {
 	now := time.Now()
 	fiveMinutesLater := now.Add(5 * time.Minute)
 	sendExecMsg := fmt.Sprintf("{\"receiver\": \"%s\",\n\"channel_id\": \"%s\",\n\"timeout\": { \"timestamp\": \"%d\"}}",
@@ -143,7 +146,7 @@ func (s *E2ETestSuite) AllNFTs(contractAddress string) []string {
 }
 
 // Different versions makes the normal helper methods fail, so the celestia transfer is done more manually:
-func (s *E2ETestSuite) CelestiaIBCTransfer(channelID string, celestiaUserKeyName string, celestiaTransfer ibc.WalletAmount) {
+func (s *InterchainValues) CelestiaIBCTransfer(channelID string, celestiaUserKeyName string, celestiaTransfer ibc.WalletAmount) {
 	// Different versions makes the helper methods fail, so the celestia transfer is done more manually:
 	txHash, err := s.Celestia.GetNode().SendIBCTransfer(s.Ctx, channelID, celestiaUserKeyName, celestiaTransfer, ibc.TransferOptions{})
 	s.NoError(err)

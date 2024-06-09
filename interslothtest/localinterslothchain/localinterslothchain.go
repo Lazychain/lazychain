@@ -1,4 +1,4 @@
-package localinterchain
+package main
 
 import (
 	"cosmossdk.io/math"
@@ -6,26 +6,41 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
-	testifysuite "github.com/stretchr/testify/suite"
 	"interslothtest/utils"
-	"testing"
+	"os"
+	"os/signal"
+	"syscall"
 )
-
-// TODO: Look into if there is a neat way to do this as a normal executable and not as a test...
 
 const mnemonic = "curve govern feature draw giggle one enemy shop wonder cross castle oxygen business obscure rule detail chaos dirt pause parrot tail lunch merit rely"
 
-type Suite struct {
-	utils.E2ETestSuite
+type LocalInterslothchain struct {
+	utils.InterchainValues
 }
 
-func TestInterchainLocal(t *testing.T) {
-	t.Logf("Running local interchain test...")
-	testifysuite.Run(t, new(Suite))
+func main() {
+	fmt.Println("Running local interslothchain...")
+
+	interchainValues := LocalInterslothchain{}
+	interchainValues.SetupFakeT("localinterslothchain")
+
+	defer func() {
+		interchainValues.GetFakeT().ActuallyRunCleanups()
+	}()
+
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		interchainValues.GetFakeT().ActuallyRunCleanups()
+		os.Exit(1)
+	}()
+
+	interchainValues.SetupInterchainValues()
+	interchainValues.TestLocalInterChain()
 }
 
-func (s *Suite) TestLocalInterChain() {
-	s.NotNil(s.Interchain)
+func (s *LocalInterslothchain) TestLocalInterChain() {
 
 	slothUser, err := interchaintest.GetAndFundTestUserWithMnemonic(s.Ctx, "user", mnemonic, math.NewInt(10_000_000_000), s.Slothchain)
 	s.NoError(err)
@@ -36,15 +51,14 @@ func (s *Suite) TestLocalInterChain() {
 	celestiaUser, err := interchaintest.GetAndFundTestUserWithMnemonic(s.Ctx, "user", mnemonic, math.NewInt(10_000_000_000), s.Celestia)
 	s.NoError(err)
 
-	nftSetup := s.DeployNFTSetup(sgUser, slothUser)
-	s.MintSloths(nftSetup.SlothContract, sgUser.KeyName(), sgUser.FormattedAddress(), []string{"1", "2", "3"})
+	nftSetup := s.DeployNFTSetup(sgUser, slothUser, "../artifacts")
 
 	s.NoError(s.Relayer.StartRelayer(s.Ctx, s.RelayerExecRep, s.StargazeSlothPath))
-	s.T().Cleanup(
+	s.TT().Cleanup(
 		func() {
 			err := s.Relayer.StopRelayer(s.Ctx, s.RelayerExecRep)
 			if err != nil {
-				s.T().Logf("an error occurred while stopping the relayer: %s", err)
+				s.TT().Logf("an error occurred while stopping the relayer: %s", err)
 			}
 		},
 	)

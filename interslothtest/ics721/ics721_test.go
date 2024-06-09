@@ -21,7 +21,7 @@ func (s *ICS721TestSuite) TestICS721() {
 	users := interchaintest.GetAndFundTestUsers(s.T(), s.Ctx, s.T().Name(), math.NewInt(10_000_000_000), s.Stargaze, s.Slothchain)
 	sgUser, slothUser := users[0], users[1]
 
-	nftSetup := s.DeployNFTSetup(sgUser, slothUser)
+	nftSetup := s.DeployNFTSetup(sgUser, slothUser, "../../artifacts")
 
 	s.NoError(s.Relayer.StartRelayer(s.Ctx, s.RelayerExecRep, s.StargazeSlothPath))
 	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.Stargaze, s.Slothchain))
