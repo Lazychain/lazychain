@@ -74,7 +74,7 @@ import (
 	"slothchain/docs"
 )
 
-const (
+var (
 	AccountAddressPrefix = "lazy"
 	Name                 = "slothchain"
 )
@@ -161,7 +161,7 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 // AppConfig returns the default app config.
 func AppConfig() depinject.Config {
 	return depinject.Configs(
-		appConfig,
+		appConfig(),
 		// Loads the app config from a YAML file.
 		// appconfig.LoadYAML(AppConfigYAML),
 		depinject.Supply(

@@ -20,6 +20,7 @@ import (
 	upgrademodulev1 "cosmossdk.io/api/cosmos/upgrade/module/v1"
 	vestingmodulev1 "cosmossdk.io/api/cosmos/vesting/module/v1"
 	"cosmossdk.io/core/appconfig"
+	"cosmossdk.io/depinject"
 	circuittypes "cosmossdk.io/x/circuit/types"
 	evidencetypes "cosmossdk.io/x/evidence/types"
 	"cosmossdk.io/x/feegrant"
@@ -144,7 +145,10 @@ var (
 	}
 
 	// appConfig application configuration (used by depinject)
-	appConfig = appconfig.Compose(&appv1alpha1.Config{
+)
+
+func appConfig() depinject.Config {
+	return appconfig.Compose(&appv1alpha1.Config{
 		Modules: []*appv1alpha1.ModuleConfig{
 			{
 				Name: runtime.ModuleName,
@@ -247,4 +251,4 @@ var (
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},
 	})
-)
+}

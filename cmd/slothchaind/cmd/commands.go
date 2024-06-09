@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"io"
+	"slothchain/cmd/slothchaind/cmd/sloths"
 
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
@@ -67,7 +68,6 @@ func initRootCmd(
 	wasmcli.ExtendUnsafeResetAllCmd(
 		rootCmd,
 	)
-
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
@@ -104,6 +104,8 @@ func queryCommand() *cobra.Command {
 		server.QueryBlocksCmd(),
 		authcmd.QueryTxCmd(),
 		server.QueryBlockResultsCmd(),
+		// Custom query commands
+		sloths.GetQueryCmd(),
 	)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
@@ -132,6 +134,9 @@ func txCommand() *cobra.Command {
 		authcmd.GetSimulateCmd(),
 	)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
+
+	// Custom tx commands (setting this after, because we need the chain ID flag a bit)
+	cmd.AddCommand(sloths.GetTxCmd())
 
 	return cmd
 }
