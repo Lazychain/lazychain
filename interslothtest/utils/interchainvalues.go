@@ -60,6 +60,7 @@ func (s *InterchainValues) TT() CustomT {
 func (s *InterchainValues) NoError(err error) {
 	if s.testifySuiteRef != nil {
 		s.testifySuiteRef.NoError(err)
+		return
 	}
 
 	if err != nil {
@@ -70,6 +71,7 @@ func (s *InterchainValues) NoError(err error) {
 func (s *InterchainValues) NotEmpty(value interface{}) {
 	if s.testifySuiteRef != nil {
 		s.testifySuiteRef.NotEmpty(value)
+		return
 	}
 
 	if value == nil {
@@ -80,6 +82,7 @@ func (s *InterchainValues) NotEmpty(value interface{}) {
 func (s *InterchainValues) Len(value interface{}, length int) {
 	if s.testifySuiteRef != nil {
 		s.testifySuiteRef.Len(value, length)
+		return
 	}
 
 	// TODO: Check better plz
@@ -91,6 +94,7 @@ func (s *InterchainValues) Len(value interface{}, length int) {
 func (s *InterchainValues) Equal(expected, actual interface{}) {
 	if s.testifySuiteRef != nil {
 		s.testifySuiteRef.Equal(expected, actual)
+		return
 	}
 
 	if expected != actual {

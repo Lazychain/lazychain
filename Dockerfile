@@ -12,13 +12,15 @@ RUN --mount=type=cache,mode=0755,target=/code/downloads \
   if [ ! -z "${WASM_VERSION}" ]; then \
   wget -O /code/downloads/libwasmvm_muslc.a https://github.com/CosmWasm/wasmvm/releases/download/${WASM_VERSION}/libwasmvm_muslc.${ARCH}.a; \
   fi; \
-  cp /code/downloads/libwasmvm_muslc.a /usr/lib/libwasmvm_muslc.${ARCH}.a;
+  cp /code/downloads/libwasmvm_muslc.a /usr/lib/libwasmvm_muslc.${ARCH}.a; \
+  cp /code/downloads/libwasmvm_muslc.a /usr/lib/libwasmvm_muslc.a;
 
 RUN --mount=type=cache,mode=0755,target=/go/pkg/mod go mod download;
 
 COPY . .
 
-RUN printf "build:\n \
+# Adds static linking to the build args in the ignite config.yml file
+RUN printf "\n\
   ldflags:\n \
     - \"-linkmode=external\"\n \
     - \"-extldflags '-Wl,-z,muldefs -static'\"\n" >> config.yml

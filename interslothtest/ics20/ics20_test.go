@@ -23,8 +23,6 @@ func TestICS20TestSuite(t *testing.T) {
 }
 
 func (s *ICS20TestSuite) TestIBCTokenTransfers() {
-	s.T().Parallel()
-
 	s.NotNil(s.Interchain)
 
 	slothUser, err := s.Slothchain.BuildWallet(s.Ctx, "slothUser", "")
@@ -136,8 +134,6 @@ func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 }
 
 func (s *ICS20TestSuite) TestTIAGasToken() {
-	s.T().Parallel()
-
 	s.NotNil(s.Interchain)
 
 	celestiaUser := interchaintest.GetAndFundTestUsers(s.T(), s.Ctx, s.T().Name(), math.NewInt(10_000_000_000), s.Celestia)[0]

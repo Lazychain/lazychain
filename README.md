@@ -1,11 +1,27 @@
 # SlothChain 🦥
 
-Too... Lazy... To... Write... 🦥💤
+LM... 🦥💤
 
 ## Installation
 
 ```bash
 $ ignite chain build
+```
+
+## Interslothtest
+
+The interslothtest directory contains an e2e test suite for the Slothchain IBC setup:
+- Slothchain
+- Stargaze
+- Celestia
+
+The test suite uses Interchaintest to spin up a full environment with ICS721 and all you need to test the full
+sloth journey end-to-end.
+
+You can run the test suite with the following command:
+```bash
+$ cd interslothtest
+$ go test -v -p 1 ./...
 ```
 
 ### Run a lazy 💤 local interslothchain environment
@@ -27,6 +43,11 @@ The environment sets up all the above components and configures:
 - Channels for ICS721 between Slothchain and Stargaze
 
 To transfer, see the command section below.
+
+There are some pre-requisites to run the interslothchain environment:
+- Go
+- Docker
+- slothchain:local image built (`make local-docker`)
 
 To run it:
 ```bash
@@ -96,3 +117,5 @@ With all override flags (necessary for local interslothchain):
 ```bash
 $ slothchaind q sloths owned-by stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk --node tcp://localhost:57023 --nft-contract stars14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9srsl6sm
 ```
+## 💤
+Too... Lazy... To... Write... More... 🦥
