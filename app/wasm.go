@@ -1,11 +1,16 @@
 package app
 
 import (
-	storetypes "cosmossdk.io/store/types"
 	"fmt"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
+	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
+
+	storetypes "cosmossdk.io/store/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -14,8 +19,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	ibcfee "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
 )
 
 // AllCapabilities returns all capabilities available with the current wasmvm
@@ -34,7 +37,7 @@ func AllCapabilities() []string {
 }
 
 // registerWasmModules register CosmWasm keepers and non dependency inject modules.
-func (app *App) registerWasmModules(
+func (app *SlothApp) registerWasmModules(
 	appOpts servertypes.AppOptions,
 	wasmOpts ...wasmkeeper.Option,
 ) (porttypes.IBCModule, error) {
@@ -107,17 +110,6 @@ func (app *App) registerWasmModules(
 		return nil, err
 	}
 
-	// At startup, after all modules have been registered, check that all proto
-	// annotations are correct.
-	/*protoFiles, err := proto.MergedRegistry()
-	if err != nil {
-		return nil, err
-	}
-	err = msgservice.ValidateProtoAnnotations(protoFiles)
-	if err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err.Error())
-	}*/
-
 	// Create fee enabled wasm ibc Stack
 	var wasmStack porttypes.IBCModule
 	wasmStack = wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCFeeKeeper)
@@ -126,7 +118,7 @@ func (app *App) registerWasmModules(
 	return wasmStack, nil
 }
 
-func (app *App) setPostHandler() error {
+func (app *SlothApp) setPostHandler() error {
 	postHandler, err := posthandler.NewPostHandler(
 		posthandler.HandlerOptions{},
 	)
@@ -137,7 +129,7 @@ func (app *App) setPostHandler() error {
 	return nil
 }
 
-func (app *App) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.WasmConfig, txCounterStoreKey *storetypes.KVStoreKey) error {
+func (app *SlothApp) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.WasmConfig, txCounterStoreKey *storetypes.KVStoreKey) error {
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{

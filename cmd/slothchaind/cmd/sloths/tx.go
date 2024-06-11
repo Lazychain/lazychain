@@ -3,13 +3,15 @@ package sloths
 import (
 	"encoding/base64"
 	"fmt"
+	"strings"
+	"time"
+
 	wasmdtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/spf13/cobra"
-	"strings"
-	"time"
 )
 
 func GetTxCmd() *cobra.Command {

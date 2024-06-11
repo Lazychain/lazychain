@@ -3,11 +3,18 @@ package cmd
 import (
 	"errors"
 	"io"
-	"slothchain/cmd/slothchaind/cmd/sloths"
+
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
+	dbm "github.com/cosmos/cosmos-db"
+	rollserv "github.com/rollkit/cosmos-sdk-starter/server"
+	rollconf "github.com/rollkit/rollkit/config"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
-	dbm "github.com/cosmos/cosmos-db"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -21,15 +28,9 @@ import (
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
-	"slothchain/app"
-
-	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
-	rollserv "github.com/rollkit/cosmos-sdk-starter/server"
-	rollconf "github.com/rollkit/rollkit/config"
+	"github.com/gjermundgaraba/slothchain/app"
+	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/sloths"
 )
 
 func initRootCmd(
@@ -73,7 +74,6 @@ func initRootCmd(
 func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
 	wasm.AddModuleInitFlags(startCmd)
-
 }
 
 // genesisCommand builds genesis-related `slothchaind genesis` command. Users may provide application specific commands as a parameter
@@ -150,7 +150,7 @@ func newApp(
 ) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
 
-	app, err := app.New(
+	slothApp, err := app.New(
 		logger, db, traceStore, true,
 		appOpts,
 		baseappOptions...,
@@ -158,7 +158,7 @@ func newApp(
 	if err != nil {
 		panic(err)
 	}
-	return app
+	return slothApp
 }
 
 // appExport creates a new app (optionally at a given height) and exports state.
@@ -173,7 +173,7 @@ func appExport(
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
 	var (
-		bApp *app.App
+		bApp *app.SlothApp
 		err  error
 	)
 

@@ -5,19 +5,41 @@ import (
 	"os"
 	"path/filepath"
 
-	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	dbm "github.com/cosmos/cosmos-db"
+	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
+	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
+	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+
+	_ "cosmossdk.io/api/cosmos/tx/config/v1"                            // import for side-effects
+	_ "cosmossdk.io/x/circuit"                                          // import for side-effects
+	_ "cosmossdk.io/x/evidence"                                         // import for side-effects
+	_ "cosmossdk.io/x/feegrant/module"                                  // import for side-effects
+	_ "cosmossdk.io/x/upgrade"                                          // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"                   // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/auth/vesting"                     // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/authz/module"                     // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/bank"                             // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/consensus"                        // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/crisis"                           // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/distribution"                     // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/mint"                             // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/params"                           // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/slashing"                         // import for side-effects
+	_ "github.com/cosmos/cosmos-sdk/x/staking"                          // import for side-effects
+	_ "github.com/cosmos/ibc-go/modules/capability"                     // import for side-effects
+	_ "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts" // import for side-effects
+	_ "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"                 // import for side-effects
+
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
-	_ "cosmossdk.io/x/circuit" // import for side-effects
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
-	_ "cosmossdk.io/x/evidence" // import for side-effects
 	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
-	_ "cosmossdk.io/x/feegrant/module" // import for side-effects
-	_ "cosmossdk.io/x/upgrade"         // import for side-effects
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
-	dbm "github.com/cosmos/cosmos-db"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -29,49 +51,25 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	_ "github.com/cosmos/cosmos-sdk/x/auth" // import for side-effects
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
-	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config" // import for side-effects
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	_ "github.com/cosmos/cosmos-sdk/x/auth/vesting" // import for side-effects
 	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	_ "github.com/cosmos/cosmos-sdk/x/authz/module" // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/bank"         // import for side-effects
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-	_ "github.com/cosmos/cosmos-sdk/x/consensus" // import for side-effects
 	consensuskeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
-	_ "github.com/cosmos/cosmos-sdk/x/crisis" // import for side-effects
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
-	_ "github.com/cosmos/cosmos-sdk/x/distribution" // import for side-effects
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
-	_ "github.com/cosmos/cosmos-sdk/x/mint" // import for side-effects
 	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
-	_ "github.com/cosmos/cosmos-sdk/x/params" // import for side-effects
-	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	_ "github.com/cosmos/cosmos-sdk/x/slashing" // import for side-effects
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
-	_ "github.com/cosmos/cosmos-sdk/x/staking" // import for side-effects
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	_ "github.com/cosmos/ibc-go/modules/capability" // import for side-effects
-	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
-	_ "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts" // import for side-effects
-	_ "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"                 // import for side-effects
-	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	// this line is used by starport scaffolding # stargate/app/moduleImport
-
-	"slothchain/docs"
+	"github.com/gjermundgaraba/slothchain/docs"
 )
 
 var (
@@ -79,20 +77,18 @@ var (
 	Name                 = "slothchain"
 )
 
-var (
-	// DefaultNodeHome default home directories for the application daemon
-	DefaultNodeHome string
-)
+// DefaultNodeHome default home directories for the application daemon
+var DefaultNodeHome string
 
 var (
-	_ runtime.AppI            = (*App)(nil)
-	_ servertypes.Application = (*App)(nil)
+	_ runtime.AppI            = (*SlothApp)(nil)
+	_ servertypes.Application = (*SlothApp)(nil)
 )
 
-// App extends an ABCI application, but with most of its parameters exported.
+// SlothApp extends an ABCI application, but with most of its parameters exported.
 // They are exported for convenience in creating helper functions, as object
 // capabilities aren't needed for testing.
-type App struct {
+type SlothApp struct {
 	*runtime.App
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
@@ -145,21 +141,8 @@ func init() {
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
 }
 
-// getGovProposalHandlers return the chain proposal handlers.
-func getGovProposalHandlers() []govclient.ProposalHandler {
-	var govProposalHandlers []govclient.ProposalHandler
-	// this line is used by starport scaffolding # stargate/app/govProposalHandlers
-
-	govProposalHandlers = append(govProposalHandlers,
-		paramsclient.ProposalHandler,
-		// this line is used by starport scaffolding # stargate/app/govProposalHandler
-	)
-
-	return govProposalHandlers
-}
-
-// AppConfig returns the default app config.
-func AppConfig() depinject.Config {
+// Config returns the default app config.
+func Config() depinject.Config {
 	return depinject.Configs(
 		appConfig(),
 		// Loads the app config from a YAML file.
@@ -174,7 +157,7 @@ func AppConfig() depinject.Config {
 	)
 }
 
-// New returns a reference to an initialized App.
+// New returns a reference to an initialized SlothApp.
 func New(
 	logger log.Logger,
 	db dbm.DB,
@@ -182,21 +165,21 @@ func New(
 	loadLatest bool,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) (*App, error) {
+) (*SlothApp, error) {
 	var (
-		app        = &App{}
+		app        = &SlothApp{}
 		appBuilder *runtime.AppBuilder
 
-		// merge the AppConfig and other configuration in one config
+		// merge the Config and other configuration in one config
 		appConfig = depinject.Configs(
-			AppConfig(),
+			Config(),
 			depinject.Supply(
 				// Supply the application options
 				appOpts,
-				// Supply with IBC keeper getter for the IBC modules with App Wiring.
+				// Supply with IBC keeper getter for the IBC modules with SlothApp Wiring.
 				// The IBC Keeper cannot be passed because it has not been initiated yet.
 				// Passing the getter, the app IBC Keeper will always be accessible.
-				// This needs to be removed after IBC supports App Wiring.
+				// This needs to be removed after IBC supports SlothApp Wiring.
 				app.GetIBCKeeper,
 				app.GetCapabilityScopedKeeper,
 				// Supply the logger
@@ -276,13 +259,13 @@ func New(
 	//
 	// Example:
 	//
-	// app.App = appBuilder.Build(...)
+	// app.SlothApp = appBuilder.Build(...)
 	// nonceMempool := mempool.NewSenderNonceMempool()
-	// abciPropHandler := NewDefaultProposalHandler(nonceMempool, app.App.BaseApp)
+	// abciPropHandler := NewDefaultProposalHandler(nonceMempool, app.SlothApp.BaseApp)
 	//
-	// app.App.BaseApp.SetMempool(nonceMempool)
-	// app.App.BaseApp.SetPrepareProposal(abciPropHandler.PrepareProposalHandler())
-	// app.App.BaseApp.SetProcessProposal(abciPropHandler.ProcessProposalHandler())
+	// app.SlothApp.BaseApp.SetMempool(nonceMempool)
+	// app.SlothApp.BaseApp.SetPrepareProposal(abciPropHandler.PrepareProposalHandler())
+	// app.SlothApp.BaseApp.SetProcessProposal(abciPropHandler.ProcessProposalHandler())
 	//
 	// Alternatively, you can construct BaseApp options, append those to
 	// baseAppOptions and pass them to the appBuilder.
@@ -313,8 +296,7 @@ func New(
 		return nil, err
 	}
 
-	/****  Module Options ****/
-
+	// Module options
 	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
@@ -334,7 +316,7 @@ func New(
 	//
 	// app.SetInitChainer(func(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	// 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
-	// 	return app.App.InitChainer(ctx, req)
+	// 	return app.SlothApp.InitChainer(ctx, req)
 	// })
 
 	if err := app.Load(loadLatest); err != nil {
@@ -343,27 +325,26 @@ func New(
 
 	return app, app.WasmKeeper.
 		InitializePinnedCodes(app.NewUncachedContext(true, tmproto.Header{}))
-
 }
 
-// LegacyAmino returns App's amino codec.
+// LegacyAmino returns SlothApp's amino codec.
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *App) LegacyAmino() *codec.LegacyAmino {
+func (app *SlothApp) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
-// AppCodec returns App's app codec.
+// AppCodec returns SlothApp's app codec.
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *App) AppCodec() codec.Codec {
+func (app *SlothApp) AppCodec() codec.Codec {
 	return app.appCodec
 }
 
 // GetKey returns the KVStoreKey for the provided store key.
-func (app *App) GetKey(storeKey string) *storetypes.KVStoreKey {
+func (app *SlothApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	kvStoreKey, ok := app.UnsafeFindStoreKey(storeKey).(*storetypes.KVStoreKey)
 	if !ok {
 		return nil
@@ -372,7 +353,7 @@ func (app *App) GetKey(storeKey string) *storetypes.KVStoreKey {
 }
 
 // GetMemKey returns the MemoryStoreKey for the provided store key.
-func (app *App) GetMemKey(storeKey string) *storetypes.MemoryStoreKey {
+func (app *SlothApp) GetMemKey(storeKey string) *storetypes.MemoryStoreKey {
 	key, ok := app.UnsafeFindStoreKey(storeKey).(*storetypes.MemoryStoreKey)
 	if !ok {
 		return nil
@@ -381,8 +362,8 @@ func (app *App) GetMemKey(storeKey string) *storetypes.MemoryStoreKey {
 	return key
 }
 
-// kvStoreKeys returns all the kv store keys registered inside App.
-func (app *App) kvStoreKeys() map[string]*storetypes.KVStoreKey {
+// kvStoreKeys returns all the kv store keys registered inside SlothApp.
+func (app *SlothApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 	keys := make(map[string]*storetypes.KVStoreKey)
 	for _, k := range app.GetStoreKeys() {
 		if kv, ok := k.(*storetypes.KVStoreKey); ok {
@@ -394,29 +375,29 @@ func (app *App) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 }
 
 // GetSubspace returns a param subspace for a given module name.
-func (app *App) GetSubspace(moduleName string) paramstypes.Subspace {
+func (app *SlothApp) GetSubspace(moduleName string) paramstypes.Subspace {
 	subspace, _ := app.ParamsKeeper.GetSubspace(moduleName)
 	return subspace
 }
 
 // GetIBCKeeper returns the IBC keeper.
-func (app *App) GetIBCKeeper() *ibckeeper.Keeper {
+func (app *SlothApp) GetIBCKeeper() *ibckeeper.Keeper {
 	return app.IBCKeeper
 }
 
 // GetCapabilityScopedKeeper returns the capability scoped keeper.
-func (app *App) GetCapabilityScopedKeeper(moduleName string) capabilitykeeper.ScopedKeeper {
+func (app *SlothApp) GetCapabilityScopedKeeper(moduleName string) capabilitykeeper.ScopedKeeper {
 	return app.CapabilityKeeper.ScopeToModule(moduleName)
 }
 
 // SimulationManager implements the SimulationApp interface.
-func (app *App) SimulationManager() *module.SimulationManager {
+func (app *SlothApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
 // API server.
-func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
+func (app *SlothApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	app.App.RegisterAPIRoutes(apiSvr, apiConfig)
 	// register swagger API in app.go so that other applications can override easily
 	if err := server.RegisterSwaggerAPI(apiSvr.ClientCtx, apiSvr.Router, apiConfig.Swagger); err != nil {

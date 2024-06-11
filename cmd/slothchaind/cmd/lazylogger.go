@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"io"
+
+	"github.com/rs/zerolog"
+
 	"cosmossdk.io/log"
+
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
-	"github.com/rs/zerolog"
-	"io"
 )
 
 func CreateLazyLogger(ctx *server.Context, out io.Writer) (log.Logger, error) {

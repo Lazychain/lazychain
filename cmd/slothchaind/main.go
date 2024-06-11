@@ -7,8 +7,8 @@ import (
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
-	"slothchain/app"
-	"slothchain/cmd/slothchaind/cmd"
+	"github.com/gjermundgaraba/slothchain/app"
+	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 
 	rootCmd := cmd.NewRootCmd()
 	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
-		fmt.Fprintln(rootCmd.OutOrStderr(), err)
+		_, _ = fmt.Fprintln(rootCmd.OutOrStderr(), err)
 		os.Exit(1)
 	}
 }

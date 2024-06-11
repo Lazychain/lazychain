@@ -3,17 +3,21 @@ package sloths
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	wasmdtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/spf13/cobra"
-	"strings"
 )
 
+type Data struct {
+	Tokens []string `json:"tokens"`
+}
+
 type queryNFTSOwnedResponse struct {
-	Data struct {
-		Tokens []string `json:"tokens"`
-	} `json:"data"`
+	Data Data `json:"data"`
 }
 
 func GetQueryCmd() *cobra.Command {
