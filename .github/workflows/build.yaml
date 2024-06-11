@@ -12,7 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Build Slothchain
-        uses: ignite/cli/actions/cli@v28.4.0
+        uses: ignite/cli/actions/cli@latest
         with:
           args: chain build
