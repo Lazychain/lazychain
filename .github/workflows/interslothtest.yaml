@@ -34,22 +34,22 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ghcr.io/gjermundgaraba/slothchain:latest
+          tags: ghcr.io/gjermundgaraba/slothchain:latest # TODO: It would better to create a commit specific tag
 
-  #interslothtest:
-  #  runs-on: ubuntu-latest
-  #  steps:
-  #    - uses: actions/checkout@v4
-  #    - name: Log in to the Container registry
-  #      uses: docker/login-action@v3
-  #      with:
-  #        registry: ${{ env.REGISTRY }}
-  #        username: ${{ github.actor }}
-  #        password: ${{ secrets.GITHUB_TOKEN }}
+  interslothtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-  #    - uses: actions/setup-go@v5
-  #      with:
-  #        go-version: '1.22'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
 
-  #    - name: Run interslothtest
-  #      run: make interslothtest
+      - name: Run interslothtest
+        run: SLOTHCHAIN_IMAGE_VERSION=latest make interslothtest # TODO: It would be better to get a specific version of the image

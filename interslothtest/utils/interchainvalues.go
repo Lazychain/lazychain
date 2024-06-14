@@ -14,6 +14,7 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	testifysuite "github.com/stretchr/testify/suite"
 	"go.uber.org/zap/zaptest"
+	"os"
 	"strings"
 )
 
@@ -172,6 +173,14 @@ func (s *InterchainValues) SetupInterchainValues() {
 }
 
 func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory {
+	slothchainImageVersion := "local"
+	env, found := os.LookupEnv("SLOTHCHAIN_IMAGE_VERSION")
+	if found {
+		s.TT().Log("SLOTHCHAIN_IMAGE_VERSION from environment found", env)
+		slothchainImageVersion = env
+	}
+	s.TT().Log("SLOTHCHAIN_IMAGE_VERSION", slothchainImageVersion)
+
 	return interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(s.TT()), []*interchaintest.ChainSpec{
 		{
 			Name:      "slothchain",
@@ -184,7 +193,7 @@ func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory
 				Images: []ibc.DockerImage{
 					{
 						Repository: "slothchain",
-						Version:    "local",
+						Version:    slothchainImageVersion,
 						UidGid:     "1025:1025",
 					},
 				},
