@@ -38,6 +38,7 @@ jobs:
 
   interslothtest:
     runs-on: ubuntu-latest
+    needs: [build-docker-image]
     steps:
       - uses: actions/checkout@v4
       - name: Log in to the Container registry
