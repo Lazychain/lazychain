@@ -15,7 +15,7 @@ RUN set -eux; \
   cp /code/downloads/libwasmvm_muslc.a /usr/lib/libwasmvm_muslc.${ARCH}.a; \
   cp /code/downloads/libwasmvm_muslc.a /usr/lib/libwasmvm_muslc.a;
 
-RUN --mount=type=cache,mode=0755,target=/go/pkg/mod go mod download;
+RUN go mod download;
 
 COPY . .
 
