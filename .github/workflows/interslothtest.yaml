@@ -10,6 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: slothchain
+  SLOTHCHAIN_IMAGE_REPOSITORY: ghcr.io/gjermundgaraba/slothchain
   SLOTHCHAIN_IMAGE_VERSION: latest # TODO: It would be better to get a specific version of the image
 
 jobs:

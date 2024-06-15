@@ -173,13 +173,21 @@ func (s *InterchainValues) SetupInterchainValues() {
 }
 
 func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory {
+	slothchainImageRepository := "slothchain"
 	slothchainImageVersion := "local"
-	env, found := os.LookupEnv("SLOTHCHAIN_IMAGE_VERSION")
+	envImageVersion, found := os.LookupEnv("SLOTHCHAIN_IMAGE_VERSION")
 	if found {
-		s.TT().Log("SLOTHCHAIN_IMAGE_VERSION from environment found", env)
-		slothchainImageVersion = env
+		s.TT().Log("SLOTHCHAIN_IMAGE_VERSION from environment found", envImageVersion)
+		slothchainImageVersion = envImageVersion
 	}
+	envImageRepository, found := os.LookupEnv("SLOTHCHAIN_IMAGE_REPOSITORY")
+	if found {
+		s.TT().Log("SLOTHCHAIN_IMAGE_REPOSITORY from environment found", envImageRepository)
+		slothchainImageRepository = envImageRepository
+	}
+
 	s.TT().Log("SLOTHCHAIN_IMAGE_VERSION", slothchainImageVersion)
+	s.TT().Log("SLOTHCHAIN_IMAGE_REPOSITORY", slothchainImageRepository)
 
 	return interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(s.TT()), []*interchaintest.ChainSpec{
 		{
@@ -192,7 +200,7 @@ func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory
 				ChainID: slothChainId,
 				Images: []ibc.DockerImage{
 					{
-						Repository: "slothchain",
+						Repository: slothchainImageRepository,
 						Version:    slothchainImageVersion,
 						UidGid:     "1025:1025",
 					},
