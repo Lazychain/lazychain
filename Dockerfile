@@ -5,8 +5,8 @@ WORKDIR /code
 
 # Download dependencies and CosmWasm libwasmvm if found.
 ADD go.mod go.sum ./
-RUN --mount=type=cache,mode=0755,target=/code/downloads \
-  set -eux; \
+RUN uname -m
+RUN set -eux; \
   export ARCH=$(uname -m); \
   WASM_VERSION=$(go list -m all | grep github.com/CosmWasm/wasmvm | awk '{print $2}'); \
   if [ ! -z "${WASM_VERSION}" ]; then \
