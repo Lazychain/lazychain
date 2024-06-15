@@ -185,7 +185,7 @@ func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory
 		{
 			Name:      "slothchain",
 			ChainName: "slothchain",
-			Version:   "local",
+			Version:   slothchainImageVersion,
 			ChainConfig: ibc.ChainConfig{
 				Type:    "cosmos",
 				Name:    "slothchain",
