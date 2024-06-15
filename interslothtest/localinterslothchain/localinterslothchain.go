@@ -51,7 +51,7 @@ func (s *LocalInterslothchain) TestLocalInterChain() {
 	celestiaUser, err := interchaintest.GetAndFundTestUserWithMnemonic(s.Ctx, "user", mnemonic, math.NewInt(10_000_000_000), s.Celestia)
 	s.NoError(err)
 
-	nftSetup := s.DeployNFTSetup(sgUser, slothUser, "../artifacts")
+	nftSetup := s.DeployNFTSetup(sgUser, slothUser, "./test-artifacts")
 
 	s.NoError(s.Relayer.StartRelayer(s.Ctx, s.RelayerExecRep, s.StargazeSlothPath))
 	s.TT().Cleanup(

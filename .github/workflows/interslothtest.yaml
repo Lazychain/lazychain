@@ -10,6 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: slothchain
+  SLOTHCHAIN_IMAGE_VERSION: latest # TODO: It would be better to get a specific version of the image
 
 jobs:
   build-docker-image:
@@ -53,4 +54,4 @@ jobs:
           go-version: '1.22'
 
       - name: Run interslothtest
-        run: SLOTHCHAIN_IMAGE_VERSION=latest make interslothtest # TODO: It would be better to get a specific version of the image
+        run: make interslothtest
