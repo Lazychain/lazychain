@@ -3,7 +3,6 @@ package sloths
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
 	"strings"
 
 	wasmdtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -11,6 +10,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
+
+	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
 )
 
 type Data struct {

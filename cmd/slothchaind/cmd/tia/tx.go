@@ -1,20 +1,23 @@
 package tia
 
 import (
-	sdkmath "cosmossdk.io/math"
 	"fmt"
-	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/tx"
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
-	"github.com/spf13/cobra"
 	"strconv"
 	"strings"
 	"time"
 
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	"github.com/spf13/cobra"
+
+	sdkmath "cosmossdk.io/math"
+
 	"github.com/cosmos/cosmos-sdk/client"
+	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
+	"github.com/cosmos/cosmos-sdk/client/tx"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
 )
 
 func GetTxCmd() *cobra.Command {

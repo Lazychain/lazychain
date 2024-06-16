@@ -3,7 +3,6 @@ package sloths
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
 	"strings"
 	"time"
 
@@ -13,6 +12,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+
+	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
 )
 
 func GetTxCmd() *cobra.Command {

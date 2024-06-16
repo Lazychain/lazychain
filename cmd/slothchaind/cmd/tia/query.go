@@ -2,13 +2,16 @@ package tia
 
 import (
 	"fmt"
+	"strings"
+
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
-	"github.com/spf13/cobra"
-	"strings"
 )
 
 func GetQueryCmd() *cobra.Command {

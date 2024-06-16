@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/tia"
 	"io"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -32,6 +31,7 @@ import (
 
 	"github.com/gjermundgaraba/slothchain/app"
 	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/sloths"
+	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/tia"
 )
 
 func initRootCmd(
