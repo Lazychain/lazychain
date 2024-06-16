@@ -5,12 +5,11 @@ WORKDIR /code
 
 # Download dependencies and CosmWasm libwasmvm if found.
 ADD go.mod go.sum ./
-RUN uname -m
 RUN set -eux; \
   export ARCH=$(uname -m); \
   WASM_VERSION=$(go list -m all | grep github.com/CosmWasm/wasmvm | awk '{print $2}'); \
   if [ ! -z "${WASM_VERSION}" ]; then \
-  wget -O /code/downloads/libwasmvm_muslc.a https://github.com/CosmWasm/wasmvm/releases/download/${WASM_VERSION}/libwasmvm_muslc.${ARCH}.a; \
+  wget -O libwasmvm_muslc.a /code/downloads/libwasmvm_muslc.a https://github.com/CosmWasm/wasmvm/releases/download/${WASM_VERSION}/libwasmvm_muslc.${ARCH}.a; \
   fi; \
   cp /code/downloads/libwasmvm_muslc.a /usr/lib/libwasmvm_muslc.${ARCH}.a; \
   cp /code/downloads/libwasmvm_muslc.a /usr/lib/libwasmvm_muslc.a;
