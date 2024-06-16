@@ -7,9 +7,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
 	"github.com/spf13/cobra"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
 	"strconv"
 	"strings"
 	"time"
@@ -42,7 +42,9 @@ func TransferCmd() *cobra.Command {
 
 			node, _ := cmd.Flags().GetString(sdkflags.FlagNode)
 			chainID, _ := cmd.Flags().GetString(sdkflags.FlagChainID)
-			waitForTx, _ := cmd.Flags().GetBool(lazycommandutils.FlagWaitForTx)
+			// TODO: Fix celestia wait for tx (json: cannot unmarshal string into Go value of type uint8)
+			// waitForTx, _ := cmd.Flags().GetBool(lazycommandutils.FlagWaitForTx)
+			waitForTx := false
 			denom, _ := cmd.Flags().GetString(lazycommandutils.FlagICS20Denom)
 			ics20Channel, _ := cmd.Flags().GetString(lazycommandutils.FlagICS20Channel)
 

@@ -127,6 +127,7 @@ func SendAndWaitForTx(clientCtx client.Context, flagSet *pflag.FlagSet, msgs ...
 		txResp, err := authtx.QueryTx(clientCtx, res.TxHash)
 		if err != nil {
 			fmt.Print("\033[G\033[K") // move the cursor left and clear the line
+			fmt.Printf("🦥 failed to query transaction %s: %s\n", res.TxHash, err)
 			fmt.Printf("🦥 taking... soo... long... for... %s - attempt %d/%d 💤", res.TxHash, try, maxTries)
 			time.Sleep(500 * time.Millisecond)
 			try++
