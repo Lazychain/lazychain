@@ -53,13 +53,24 @@ func QuerySlothsCmd() *cobra.Command {
 			}
 
 			isStargaze := strings.HasPrefix(owner, "stars")
-			_ = isStargaze
 			if mainnet {
 				// TODO: Set mainnet values (depending on isStargaze to set rpc and contract to query)
 				return fmt.Errorf("mainnet not supported yet")
 			} else if testnet {
-				// TODO: Set testnet values (depending on isStargaze to set rpc and contract to query)
-				return fmt.Errorf("testnet not supported yet")
+				var networkInfo StaticNetworkInfo
+				if isStargaze {
+					networkInfo = Testnet.Stargaze
+				} else {
+					networkInfo = Testnet.Slotchain
+				}
+
+				nftContract = networkInfo.NFTContract
+				node = networkInfo.Node
+
+				// Needed because this flag is picked up later by the clientCtx
+				if err := cmd.Flags().Set(sdkflags.FlagNode, node); err != nil {
+					return err
+				}
 			}
 
 			clientCtx, err := client.GetClientQueryContext(cmd)

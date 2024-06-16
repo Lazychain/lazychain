@@ -5,7 +5,7 @@ LM... 🦥💤
 ## Installation
 
 ```bash
-$ ignite chain build
+$ make install
 ```
 
 ## Interslothtest

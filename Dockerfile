@@ -1,9 +1,10 @@
-FROM ghcr.io/gjermundgaraba/ignitecli:v28.3.0-go1.22 AS builder
+FROM golang:1.22-alpine as builder
 
 USER root
 WORKDIR /code
 
-# Download dependencies and CosmWasm libwasmvm if found.
+RUN apk add --no-cache ca-certificates build-base git libusb-dev linux-headers
+
 ADD go.mod go.sum ./
 RUN set -eux; \
   export ARCH=$(uname -m); \
@@ -19,13 +20,7 @@ RUN go mod download;
 
 COPY . .
 
-# Adds static linking to the build args in the ignite config.yml file
-RUN printf "\n\
-  ldflags:\n \
-    - \"-linkmode=external\"\n \
-    - \"-extldflags '-Wl,-z,muldefs -static'\"\n" >> config.yml
-
-RUN ignite chain build --skip-proto --output build --build.tags muslc
+RUN LEDGER_ENABLED=true BUILD_TAGS=muslc LINK_STATICALLY=true make build
 
 FROM alpine:3.16
 

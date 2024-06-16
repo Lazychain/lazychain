@@ -48,11 +48,11 @@ func TransferSlothCmd() *cobra.Command {
 			testnet, _ := cmd.Flags().GetBool(flagTestnet)
 
 			// Figure out if we are transferring from stargaze to slothchain or vice versa
-			fromStargaze := strings.HasPrefix(from, "stars")
-			if fromStargaze && !strings.HasPrefix(to, "lazy") {
+			isStargaze := strings.HasPrefix(from, "stars")
+			if isStargaze && !strings.HasPrefix(to, "lazy") {
 				return fmt.Errorf("invalid addresses. Must transfer between stargaze and slothchain")
 			}
-			if !fromStargaze && (!strings.HasPrefix(to, "stars") || !strings.HasPrefix(from, "lazy")) {
+			if !isStargaze && (!strings.HasPrefix(to, "stars") || !strings.HasPrefix(from, "lazy")) {
 				return fmt.Errorf("invalid addresses. Must transfer between stargaze and slothchain")
 			}
 
@@ -66,8 +66,24 @@ func TransferSlothCmd() *cobra.Command {
 				// TODO: Set mainnet values (depending on isStargaze to set values)
 				return fmt.Errorf("mainnet not supported yet")
 			} else if testnet {
-				// TODO: Set testnet values (depending on isStargaze to set values)
-				return fmt.Errorf("testnet not supported yet")
+				var networkInfo StaticNetworkInfo
+				if isStargaze {
+					networkInfo = Testnet.Stargaze
+				} else {
+					networkInfo = Testnet.Slotchain
+				}
+
+				chainID = networkInfo.ChainID
+				if err := cmd.Flags().Set(sdkflags.FlagChainID, chainID); err != nil {
+					return err
+				}
+				node = networkInfo.Node
+				if err := cmd.Flags().Set(sdkflags.FlagNode, node); err != nil {
+					return err
+				}
+				nftContract = networkInfo.NFTContract
+				ics721Contract = networkInfo.ICS721Contract
+				ics721Channel = networkInfo.ICS721Channel
 			}
 
 			msg := createTransferMsg(from, to, nftID, nftContract, ics721Contract, ics721Channel)
