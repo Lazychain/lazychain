@@ -3,6 +3,7 @@ package sloths
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
 	"strings"
 	"time"
 
@@ -29,7 +30,7 @@ func GetTxCmd() *cobra.Command {
 
 func TransferSlothCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "transfer [from_key_or_address] [to_address] [nft-id]",
+		Use:   "transfer [from_address] [to_address] [nft-id]",
 		Short: "Transfer sloth nfts between stargaze and slothchain using ICS721",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -39,13 +40,13 @@ func TransferSlothCmd() *cobra.Command {
 
 			node, _ := cmd.Flags().GetString(sdkflags.FlagNode)
 			chainID, _ := cmd.Flags().GetString(sdkflags.FlagChainID)
-			nftContract, _ := cmd.Flags().GetString(flagNFTContract)
-			ics721Contract, _ := cmd.Flags().GetString(flagICS721Contract)
-			ics721Channel, _ := cmd.Flags().GetString(flagICS721Channel)
-			waitForTx, _ := cmd.Flags().GetBool(flagWaitForTx)
+			nftContract, _ := cmd.Flags().GetString(lazycommandutils.FlagNFTContract)
+			ics721Contract, _ := cmd.Flags().GetString(lazycommandutils.FlagICS721Contract)
+			ics721Channel, _ := cmd.Flags().GetString(lazycommandutils.FlagICS721Channel)
+			waitForTx, _ := cmd.Flags().GetBool(lazycommandutils.FlagWaitForTx)
 
-			mainnet, _ := cmd.Flags().GetBool(flagMainnet)
-			testnet, _ := cmd.Flags().GetBool(flagTestnet)
+			mainnet, _ := cmd.Flags().GetBool(lazycommandutils.FlagMainnet)
+			testnet, _ := cmd.Flags().GetBool(lazycommandutils.FlagTestnet)
 
 			// Figure out if we are transferring from stargaze to slothchain or vice versa
 			isStargaze := strings.HasPrefix(from, "stars")
@@ -59,18 +60,18 @@ func TransferSlothCmd() *cobra.Command {
 			if !mainnet && !testnet &&
 				(node == "" || chainID == "" || nftContract == "" || ics721Contract == "" || ics721Channel == "") {
 				return fmt.Errorf("missing required flags. Either set --mainnet or --testnet or provide the manual flags (--%s --%s --%s --%s --%s)",
-					sdkflags.FlagNode, sdkflags.FlagChainID, flagNFTContract, flagICS721Contract, flagICS721Channel)
+					sdkflags.FlagNode, sdkflags.FlagChainID, lazycommandutils.FlagNFTContract, lazycommandutils.FlagICS721Contract, lazycommandutils.FlagICS721Channel)
 			}
 
 			if mainnet {
 				// TODO: Set mainnet values (depending on isStargaze to set values)
 				return fmt.Errorf("mainnet not supported yet")
 			} else if testnet {
-				var networkInfo StaticNetworkInfo
+				var networkInfo lazycommandutils.StaticICS721NetworkInfo
 				if isStargaze {
-					networkInfo = Testnet.Stargaze
+					networkInfo = lazycommandutils.ICS721Testnets.Stargaze
 				} else {
-					networkInfo = Testnet.Slotchain
+					networkInfo = lazycommandutils.ICS721Testnets.Slotchain
 				}
 
 				chainID = networkInfo.ChainID
@@ -97,7 +98,7 @@ func TransferSlothCmd() *cobra.Command {
 			}
 
 			if waitForTx {
-				if err := SendAndWaitForTx(clientCtx, cmd.Flags(), &msg); err != nil {
+				if err := lazycommandutils.SendAndWaitForTx(clientCtx, cmd.Flags(), &msg); err != nil {
 					return err
 				}
 
@@ -111,12 +112,12 @@ func TransferSlothCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Bool(flagWaitForTx, true, "Wait for transaction to be included in a block")
-	cmd.Flags().String(flagICS721Contract, "", "ICS721 contract address")
-	cmd.Flags().String(flagICS721Channel, "", "ICS721 channel")
-	cmd.Flags().String(flagNFTContract, "", "NFT contract address")
-	cmd.Flags().Bool(flagMainnet, false, "Use mainnet (overrides transfer flags)")
-	cmd.Flags().Bool(flagTestnet, false, "Use testnet (overrides transfer flags)")
+	cmd.Flags().Bool(lazycommandutils.FlagWaitForTx, true, "Wait for transaction to be included in a block")
+	cmd.Flags().String(lazycommandutils.FlagICS721Contract, "", "ICS721 contract address")
+	cmd.Flags().String(lazycommandutils.FlagICS721Channel, "", "ICS721 channel")
+	cmd.Flags().String(lazycommandutils.FlagNFTContract, "", "NFT contract address")
+	cmd.Flags().Bool(lazycommandutils.FlagMainnet, false, "Use mainnet (overrides transfer flags)")
+	cmd.Flags().Bool(lazycommandutils.FlagTestnet, false, "Use testnet (overrides transfer flags)")
 
 	sdkflags.AddTxFlagsToCmd(cmd)
 	nodeFlag := cmd.Flags().Lookup(sdkflags.FlagNode)

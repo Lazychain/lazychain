@@ -1,4 +1,4 @@
-package sloths
+package lazycommandutils
 
 import (
 	"bufio"

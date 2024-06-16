@@ -13,8 +13,8 @@ import (
 
 func main() {
 	// Hack to be able to use the same binary for custom commands that send txs to stargaze
-	if isStargaze() {
-		app.AccountAddressPrefix = "stars"
+	if prefixOverride := getAddressPrefixOverride(); prefixOverride != "" {
+		app.AccountAddressPrefix = prefixOverride
 	}
 
 	rootCmd := cmd.NewRootCmd()
@@ -24,13 +24,23 @@ func main() {
 	}
 }
 
-func isStargaze() bool {
+func getAddressPrefixOverride() string {
 	args := os.Args[1:]
-	if len(args) > 3 && args[1] == "sloths" && (args[2] == "transfer" || args[2] == "owned-by") {
+	if len(args) > 3 &&
+		args[1] == "sloths" &&
+		(args[2] == "transfer" || args[2] == "owned-by") {
 		if strings.HasPrefix(args[3], "stars") {
-			return true
+			return "stars"
 		}
 	}
 
-	return false
+	if len(args) > 3 &&
+		args[1] == "tia" &&
+		(args[2] == "transfer" || args[2] == "balance") {
+		if strings.HasPrefix(args[3], "celestia") {
+			return "celestia"
+		}
+	}
+
+	return ""
 }

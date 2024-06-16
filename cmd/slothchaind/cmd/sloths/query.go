@@ -3,6 +3,7 @@ package sloths
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
 	"strings"
 
 	wasmdtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -42,26 +43,25 @@ func QuerySlothsCmd() *cobra.Command {
 			owner := args[0]
 
 			node, _ := cmd.Flags().GetString(sdkflags.FlagNode)
-			nftContract, _ := cmd.Flags().GetString(flagNFTContract)
-			mainnet, _ := cmd.Flags().GetBool(flagMainnet)
-			testnet, _ := cmd.Flags().GetBool(flagTestnet)
+			nftContract, _ := cmd.Flags().GetString(lazycommandutils.FlagNFTContract)
+			mainnet, _ := cmd.Flags().GetBool(lazycommandutils.FlagMainnet)
+			testnet, _ := cmd.Flags().GetBool(lazycommandutils.FlagTestnet)
 
 			if !mainnet && !testnet &&
 				(node == "" || nftContract == "") {
 				return fmt.Errorf("missing required flags. Either set --mainnet or --testnet or provide the manual flags (--%s --%s)",
-					sdkflags.FlagNode, flagNFTContract)
+					sdkflags.FlagNode, lazycommandutils.FlagNFTContract)
 			}
 
 			isStargaze := strings.HasPrefix(owner, "stars")
 			if mainnet {
-				// TODO: Set mainnet values (depending on isStargaze to set rpc and contract to query)
 				return fmt.Errorf("mainnet not supported yet")
 			} else if testnet {
-				var networkInfo StaticNetworkInfo
+				var networkInfo lazycommandutils.StaticICS721NetworkInfo
 				if isStargaze {
-					networkInfo = Testnet.Stargaze
+					networkInfo = lazycommandutils.ICS721Testnets.Stargaze
 				} else {
-					networkInfo = Testnet.Slotchain
+					networkInfo = lazycommandutils.ICS721Testnets.Slotchain
 				}
 
 				nftContract = networkInfo.NFTContract
@@ -112,9 +112,9 @@ func QuerySlothsCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Bool(flagMainnet, false, "Use mainnet values")
-	cmd.Flags().Bool(flagTestnet, false, "Use testnet values")
-	cmd.Flags().String(flagNFTContract, "", "NFT contract address")
+	cmd.Flags().Bool(lazycommandutils.FlagMainnet, false, "Use mainnet values")
+	cmd.Flags().Bool(lazycommandutils.FlagTestnet, false, "Use testnet values")
+	cmd.Flags().String(lazycommandutils.FlagNFTContract, "", "NFT contract address (optional if using --testnet or --mainnet)")
 
 	sdkflags.AddQueryFlagsToCmd(cmd)
 	nodeFlag := cmd.Flags().Lookup(sdkflags.FlagNode)

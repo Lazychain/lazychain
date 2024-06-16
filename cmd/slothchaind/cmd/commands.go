@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/tia"
 	"io"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -106,6 +107,7 @@ func queryCommand() *cobra.Command {
 		server.QueryBlockResultsCmd(),
 		// Custom query commands
 		sloths.GetQueryCmd(),
+		tia.GetQueryCmd(),
 	)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
@@ -137,6 +139,7 @@ func txCommand() *cobra.Command {
 
 	// Custom tx commands (setting this after, because we need the chain ID flag a bit)
 	cmd.AddCommand(sloths.GetTxCmd())
+	cmd.AddCommand(tia.GetTxCmd())
 
 	return cmd
 }
