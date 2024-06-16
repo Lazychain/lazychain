@@ -25,7 +25,7 @@ RUN printf "\n\
     - \"-linkmode=external\"\n \
     - \"-extldflags '-Wl,-z,muldefs -static'\"\n" >> config.yml
 
-RUN --mount=type=cache,mode=0755,target=/root/.ignite ignite chain build --skip-proto --output build --build.tags muslc
+RUN ignite chain build --skip-proto --output build --build.tags muslc
 
 FROM alpine:3.16
 
