@@ -68,14 +68,24 @@ func TransferCmd() *cobra.Command {
 					sdkflags.FlagNode, sdkflags.FlagChainID, lazycommandutils.FlagICS20Denom, lazycommandutils.FlagICS20Channel)
 			}
 
-			if mainnet {
-				return fmt.Errorf("mainnet not supported yet")
-			} else if testnet {
+			if mainnet || testnet {
+				// TODO: Remove once mainnet
+				if mainnet {
+					return fmt.Errorf("mainnet not supported yet")
+				}
+
+				var networks lazycommandutils.ICS20Networks
+				if mainnet {
+					networks = lazycommandutils.ICS20Mainnets
+				} else {
+					networks = lazycommandutils.ICS20Testnets
+				}
+
 				var networkInfo lazycommandutils.StaticICS20NetworkInfo
 				if isCelestia {
-					networkInfo = lazycommandutils.ICS20Testnets.Celestia
+					networkInfo = networks.Celestia
 				} else {
-					networkInfo = lazycommandutils.ICS20Testnets.Slothchain
+					networkInfo = networks.Slothchain
 				}
 
 				denom = networkInfo.ICS20Denom
@@ -88,6 +98,16 @@ func TransferCmd() *cobra.Command {
 
 				chainID = networkInfo.ChainID
 				if err := cmd.Flags().Set(sdkflags.FlagChainID, chainID); err != nil {
+					return err
+				}
+
+				if err := cmd.Flags().Set(sdkflags.FlagGas, "auto"); err != nil {
+					return err
+				}
+				if err := cmd.Flags().Set(sdkflags.FlagGasAdjustment, "1.5"); err != nil {
+					return err
+				}
+				if err := cmd.Flags().Set(sdkflags.FlagGasPrices, networkInfo.GasPrices); err != nil {
 					return err
 				}
 			}

@@ -64,15 +64,24 @@ func TransferSlothCmd() *cobra.Command {
 					sdkflags.FlagNode, sdkflags.FlagChainID, lazycommandutils.FlagNFTContract, lazycommandutils.FlagICS721Contract, lazycommandutils.FlagICS721Channel)
 			}
 
-			if mainnet {
-				// TODO: Set mainnet values (depending on isStargaze to set values)
-				return fmt.Errorf("mainnet not supported yet")
-			} else if testnet {
+			if mainnet || testnet {
+				// TODO: Remove once mainnet
+				if mainnet {
+					return fmt.Errorf("mainnet not supported yet")
+				}
+
+				var networks lazycommandutils.ICS721Networks
+				if mainnet {
+					networks = lazycommandutils.ICS721Mainnets
+				} else {
+					networks = lazycommandutils.ICS721Testnets
+				}
+
 				var networkInfo lazycommandutils.StaticICS721NetworkInfo
 				if isStargaze {
-					networkInfo = lazycommandutils.ICS721Testnets.Stargaze
+					networkInfo = networks.Stargaze
 				} else {
-					networkInfo = lazycommandutils.ICS721Testnets.Slotchain
+					networkInfo = networks.Slothchain
 				}
 
 				chainID = networkInfo.ChainID
@@ -86,6 +95,16 @@ func TransferSlothCmd() *cobra.Command {
 				nftContract = networkInfo.NFTContract
 				ics721Contract = networkInfo.ICS721Contract
 				ics721Channel = networkInfo.ICS721Channel
+
+				if err := cmd.Flags().Set(sdkflags.FlagGas, "auto"); err != nil {
+					return err
+				}
+				if err := cmd.Flags().Set(sdkflags.FlagGasAdjustment, "1.5"); err != nil {
+					return err
+				}
+				if err := cmd.Flags().Set(sdkflags.FlagGasPrices, networkInfo.GasPrices); err != nil {
+					return err
+				}
 			}
 
 			msg := createTransferMsg(from, to, nftID, nftContract, ics721Contract, ics721Channel)

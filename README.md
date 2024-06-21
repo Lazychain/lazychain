@@ -18,6 +18,14 @@ The interslothtest directory contains an e2e test suite for the Slothchain IBC s
 The test suite uses Interchaintest to spin up a full environment with ICS721 and all you need to test the full
 sloth journey end-to-end.
 
+First you need to build the local docker image:
+```bash
+$ make local-docker
+```
+
+> You can also specify the image with environment variables `SLOTHCHAIN_IMAGE_REPOSITORY` and `SLOTHCHAIN_IMAGE_VERSION`.
+> For instance, you can run the latest built in CI with `SLOTHCHAIN_IMAGE_REPOSITORY=ghcr.io/gjermundgaraba/slothchain` and `SLOTHCHAIN_IMAGE_VERSION=latest`.
+
 You can run the test suite with the following command:
 ```bash
 $ cd interslothtest
@@ -96,12 +104,12 @@ It does not currently support transfer between two addresses on the same chain.
 
 With `--mainnet` or `--testnet` flag from stargaze to slothchain
 ```bash
-$ slothchaind tx sloths transfer stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk lazy1u0g894r00fu3rnh7ft35yzk9smyaxscyhax3vs 1 --testnet --gas auto --gas-adjustment 1.5 --gas-prices 0.025ustars 
+$ slothchaind tx sloths transfer stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk lazy1u0g894r00fu3rnh7ft35yzk9smyaxscyhax3vs 1 --testnet
 ```
 
 With `--mainnet` or `--testnet` flag from slothchain to stargaze
 ```bash
-$ slothchaind tx sloths transfer lazy1u0g894r00fu3rnh7ft35yzk9smyaxscyhax3vs stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk 1 --testnet --gas auto --gas-adjustment 1.5 --gas-prices 0.025ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA 
+$ slothchaind tx sloths transfer lazy1u0g894r00fu3rnh7ft35yzk9smyaxscyhax3vs stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk 1 --testnet 
 ```
 
 With all override flags (necessary for local interslothchain):

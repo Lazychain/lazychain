@@ -62,7 +62,7 @@ func QuerySlothsCmd() *cobra.Command {
 				if isStargaze {
 					networkInfo = lazycommandutils.ICS721Testnets.Stargaze
 				} else {
-					networkInfo = lazycommandutils.ICS721Testnets.Slotchain
+					networkInfo = lazycommandutils.ICS721Testnets.Slothchain
 				}
 
 				nftContract = networkInfo.NFTContract
@@ -90,6 +90,8 @@ func QuerySlothsCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
+			clientCtx.PrintProto(res)
 
 			queryNFTSStringOutput, err := clientCtx.Codec.MarshalJSON(res)
 			if err != nil {

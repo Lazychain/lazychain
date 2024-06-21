@@ -127,16 +127,12 @@ clean:
 	rm -f $(shell which $(BINARY_NAME))
 
 ###############################################################################
-###                                  Build                                  ###
+###                                 Docker                                  ###
 ###############################################################################
 
-#install:
-#	@echo "Installing slothchaind"
-#	@ignite chain build
-#
-#local-docker:
-#	@echo "Building slothchain:local"
-#	@docker build -t slothchain:local .
+local-docker:
+	@echo "Building slothchain:local"
+	@docker build -t slothchain:local .
 
 ###############################################################################
 ###                              Run locally                                ###
