@@ -94,9 +94,14 @@ They are not implemented at the moment, but will be once testnet and mainnet are
 This command will transfer an NFT from one chain to another using ICS721 (it supports both Stargaze->Slothchain and Slothchain->Stargaze).
 It does not currently support transfer between two addresses on the same chain.
 
-With `--mainnet` or `--testnet` flag:
+With `--mainnet` or `--testnet` flag from stargaze to slothchain
 ```bash
-$ slothchaind tx sloths transfer stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk 1 --testnet
+$ slothchaind tx sloths transfer stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk lazy1u0g894r00fu3rnh7ft35yzk9smyaxscyhax3vs 1 --testnet --gas auto --gas-adjustment 1.5 --gas-prices 0.025ustars 
+```
+
+With `--mainnet` or `--testnet` flag from slothchain to stargaze
+```bash
+$ slothchaind tx sloths transfer lazy1u0g894r00fu3rnh7ft35yzk9smyaxscyhax3vs stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk 1 --testnet --gas auto --gas-adjustment 1.5 --gas-prices 0.025ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA 
 ```
 
 With all override flags (necessary for local interslothchain):
@@ -110,7 +115,7 @@ This command will query all the NFTs owned by a specific address on a specific c
 
 With `--mainnet` or `--testnet` flag:
 ```bash
-$ slothchaind q sloths owned-by stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk --mainnet
+$ slothchaind q sloths owned-by stars1ct9r7k20kp7z2m90066h6h2anq0rvmmrw9eqnk --testnet
 ```
 
 With all override flags (necessary for local interslothchain):
