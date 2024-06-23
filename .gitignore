@@ -9,6 +9,7 @@ release/
 *.ign
 
 cw-ics721/
+cw-ics721-proxy/
 cw-nfts/
 astral/
 

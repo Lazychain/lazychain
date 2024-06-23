@@ -18,9 +18,9 @@ fi
 cd cw-ics721
 git checkout v0.1.9
 just optimize
-cp artifacts/ics721_base-aarch64.wasm ../artifacts/ics721_base.wasm
+cp artifacts/ics721_base-aarch64.wasm ../interslothtest/test-artifacts/ics721_base.wasm
 cd ..
 
 cd cw-nfts
 cargo make optimize
-cp artifacts/cw721_base-aarch64.wasm ../artifacts/cw721_base.wasm
+cp artifacts/cw721_base-aarch64.wasm ../interslothtest/test-artifacts/cw721_base.wasm

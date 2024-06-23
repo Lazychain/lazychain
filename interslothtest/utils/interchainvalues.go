@@ -69,6 +69,21 @@ func (s *InterchainValues) NoError(err error) {
 	}
 }
 
+func (s *InterchainValues) ErrorContains(err error, contains string) {
+	if s.testifySuiteRef != nil {
+		s.testifySuiteRef.ErrorContains(err, contains)
+		return
+	}
+
+	if err == nil {
+		panic("error is nil")
+	}
+
+	if !strings.Contains(err.Error(), contains) {
+		panic(fmt.Sprintf("error does not contain %s", contains))
+	}
+}
+
 func (s *InterchainValues) NotEmpty(value interface{}) {
 	if s.testifySuiteRef != nil {
 		s.testifySuiteRef.NotEmpty(value)
@@ -92,9 +107,9 @@ func (s *InterchainValues) Len(value interface{}, length int) {
 	}
 }
 
-func (s *InterchainValues) Equal(expected, actual interface{}) {
+func (s *InterchainValues) Equal(expected, actual interface{}, msgAndArgs ...interface{}) {
 	if s.testifySuiteRef != nil {
-		s.testifySuiteRef.Equal(expected, actual)
+		s.testifySuiteRef.Equal(expected, actual, msgAndArgs)
 		return
 	}
 
