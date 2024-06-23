@@ -21,7 +21,7 @@ var (
 			ChainID:        testnetSlothchainChainID,
 			Node:           testnetSlothchainNode,
 			GasPrices:      testnetSlothchainGasPrices,
-			NFTContract:    "lazy1x8g2pxqcde737wf0trn98245x8ggeqk93fwynweeewusd0ze3kjqmllxsr", // TOOD: UPDATE!
+			NFTContract:    "lazy1enc8mxs5tsu6zzmvu0uh9snj28yp4nt2xycv3l6054p339gweavqgd224r",
 			ICS721Contract: "lazy1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtq8xhtac",
 			ICS721Channel:  "channel-1",
 			//ICS721Contract: "lazy1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqnzqkf5", // Base, connected with channel-1 and Base ICS721 contract
