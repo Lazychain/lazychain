@@ -91,7 +91,7 @@ func QuerySlothsCmd() *cobra.Command {
 				return err
 			}
 
-			clientCtx.PrintProto(res)
+			_ = clientCtx.PrintProto(res)
 
 			queryNFTSStringOutput, err := clientCtx.Codec.MarshalJSON(res)
 			if err != nil {

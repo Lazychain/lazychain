@@ -7,9 +7,9 @@ type ICS20Networks struct {
 
 type StaticICS20NetworkInfo struct {
 	ChainID      string
-	Node       string
-	GasPrices  string
-	ICS20Denom string
+	Node         string
+	GasPrices    string
+	ICS20Denom   string
 	ICS20Channel string
 }
 
