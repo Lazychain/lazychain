@@ -6,7 +6,7 @@ import (
 
 	cmtcfg "github.com/cometbft/cometbft/config"
 
-	"github.com/gjermundgaraba/slothchain/app"
+	"github.com/Lazychain/lazychain/app"
 )
 
 func initSDKConfig() {

@@ -11,7 +11,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
+	"github.com/Lazychain/lazychain/cmd/lazychaind/cmd/lazycommandutils"
 )
 
 func GetQueryCmd() *cobra.Command {
@@ -53,7 +53,7 @@ func QueryTIABalanceCmd() *cobra.Command {
 				if isCelestia {
 					networkInfo = lazycommandutils.ICS20Testnets.Celestia
 				} else {
-					networkInfo = lazycommandutils.ICS20Testnets.Slothchain
+					networkInfo = lazycommandutils.ICS20Testnets.LazyChain
 				}
 
 				denom = networkInfo.ICS20Denom
@@ -92,7 +92,7 @@ func QueryTIABalanceCmd() *cobra.Command {
 
 	nodeFlag := cmd.Flags().Lookup(sdkflags.FlagNode)
 	nodeFlag.DefValue = ""
-	nodeFlag.Usage = "RPC endpoint of chain to query (celestia or slothchain)"
+	nodeFlag.Usage = "RPC endpoint of chain to query (Celestia or LazyChain)"
 
 	return cmd
 }

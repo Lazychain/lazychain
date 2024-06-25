@@ -7,8 +7,8 @@ import (
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
-	"github.com/gjermundgaraba/slothchain/app"
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd"
+	"github.com/Lazychain/lazychain/app"
+	"github.com/Lazychain/lazychain/cmd/lazychaind/cmd"
 )
 
 func main() {

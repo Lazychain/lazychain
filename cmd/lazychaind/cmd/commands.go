@@ -29,9 +29,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
-	"github.com/gjermundgaraba/slothchain/app"
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/sloths"
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/tia"
+	"github.com/Lazychain/lazychain/app"
+	"github.com/Lazychain/lazychain/cmd/lazychaind/cmd/sloths"
+	"github.com/Lazychain/lazychain/cmd/lazychaind/cmd/tia"
 )
 
 func initRootCmd(
@@ -77,7 +77,7 @@ func addModuleInitFlags(startCmd *cobra.Command) {
 	wasm.AddModuleInitFlags(startCmd)
 }
 
-// genesisCommand builds genesis-related `slothchaind genesis` command. Users may provide application specific commands as a parameter
+// genesisCommand builds genesis-related `lazychaind genesis` command. Users may provide application specific commands as a parameter
 func genesisCommand(txConfig client.TxConfig, basicManager module.BasicManager, cmds ...*cobra.Command) *cobra.Command {
 	cmd := genutilcli.Commands(txConfig, basicManager, app.DefaultNodeHome)
 
@@ -176,7 +176,7 @@ func appExport(
 	modulesToExport []string,
 ) (servertypes.ExportedApp, error) {
 	var (
-		bApp *app.SlothApp
+		bApp *app.LazyApp
 		err  error
 	)
 

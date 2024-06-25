@@ -15,4 +15,4 @@ astral/
 
 artifacts/
 build/
-restart-slothchaind.sh
+restart-lazychaind.sh

@@ -1,4 +1,4 @@
-name: "E2E Test Slothchain 💤"
+name: "E2E Test LazyChain 💤"
 
 on:
   workflow_dispatch:
@@ -9,9 +9,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: slothchain
-  SLOTHCHAIN_IMAGE_REPOSITORY: ghcr.io/gjermundgaraba/slothchain
-  SLOTHCHAIN_IMAGE_VERSION: latest # TODO: It would be better to get a specific version of the image
+  IMAGE_NAME: lazychain
+  LAZYCHAIN_IMAGE_REPOSITORY: ghcr.io/Lazychain/lazychain
+  LAZYCHAIN_IMAGE_VERSION: latest # TODO: It would be better to get a specific version of the image
 
 jobs:
   build-docker-image:
@@ -33,9 +33,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ghcr.io/gjermundgaraba/slothchain:latest # TODO: It would better to create a commit specific tag
+          tags: ghcr.io/Lazychain/lazychain:latest # TODO: It would better to create a commit specific tag
 
-  interslothtest:
+  interchaintest:
     runs-on: ubuntu-latest
     needs: [build-docker-image]
     steps:
@@ -50,10 +50,10 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-          cache-dependency-path: 'interslothtest/go.sum'
+          cache-dependency-path: 'interchaintest/go.sum'
 
       - name: Load Docker Image
-        run: docker pull ${{ env.SLOTHCHAIN_IMAGE_REPOSITORY }}:${{ env.SLOTHCHAIN_IMAGE_VERSION }}
+        run: docker pull ${{ env.LAZYCHAIN_IMAGE_REPOSITORY }}:${{ env.LAZYCHAIN_IMAGE_VERSION }}
 
-      - name: Run interslothtest
-        run: make interslothtest
+      - name: Run interchaintest
+        run: make interchaintest

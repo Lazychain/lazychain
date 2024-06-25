@@ -1,4 +1,4 @@
-name: "Build Slothchain 💤"
+name: "Build LazyChain 💤"
 
 on:
   workflow_dispatch:
@@ -15,10 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Build Slothchain
-        uses: ignite/cli/actions/cli@main
-        with:
-          args: chain build
+      - name: Build LazyChain
+        run: make build

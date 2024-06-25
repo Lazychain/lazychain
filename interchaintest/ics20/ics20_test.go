@@ -2,8 +2,8 @@ package ics20
 
 import (
 	"fmt"
+	"github.com/Lazychain/lazychain/interchaintest/utils"
 	"go.uber.org/zap/zaptest"
-	"interslothtest/utils"
 	"testing"
 
 	"cosmossdk.io/math"
@@ -25,7 +25,7 @@ func TestICS20TestSuite(t *testing.T) {
 func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 	s.NotNil(s.Interchain)
 
-	slothUser, err := s.Slothchain.BuildWallet(s.Ctx, "slothUser", "")
+	slothUser, err := s.LazyChain.BuildWallet(s.Ctx, "slothUser", "")
 	s.NoError(err)
 	stargazeUser := interchaintest.GetAndFundTestUsers(s.T(), s.Ctx, s.T().Name(), math.NewInt(10_000_000_000), s.Stargaze)[0]
 	celestiaUser := interchaintest.GetAndFundTestUsers(s.T(), s.Ctx, s.T().Name(), math.NewInt(10_000_000_000), s.Celestia)[0]
@@ -40,12 +40,12 @@ func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 		},
 	)
 
-	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.Slothchain, s.Stargaze, s.Celestia))
+	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.LazyChain, s.Stargaze, s.Celestia))
 
-	sgToSlothChannel, err := ibc.GetTransferChannel(s.Ctx, s.Relayer, s.RelayerExecRep, s.Stargaze.Config().ChainID, s.Slothchain.Config().ChainID)
+	sgToSlothChannel, err := ibc.GetTransferChannel(s.Ctx, s.Relayer, s.RelayerExecRep, s.Stargaze.Config().ChainID, s.LazyChain.Config().ChainID)
 	s.NoError(err)
 
-	celestiaToSlothChannel, err := ibc.GetTransferChannel(s.Ctx, s.Relayer, s.RelayerExecRep, s.Celestia.Config().ChainID, s.Slothchain.Config().ChainID)
+	celestiaToSlothChannel, err := ibc.GetTransferChannel(s.Ctx, s.Relayer, s.RelayerExecRep, s.Celestia.Config().ChainID, s.LazyChain.Config().ChainID)
 	s.NoError(err)
 
 	sgUserAddr := stargazeUser.FormattedAddress()
@@ -74,7 +74,7 @@ func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 	}
 	s.CelestiaIBCTransfer(celestiaToSlothChannel.ChannelID, celestiaUser.KeyName(), celestiaTransfer)
 
-	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.Slothchain, s.Stargaze, s.Celestia))
+	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.LazyChain, s.Stargaze, s.Celestia))
 
 	starsSrcDenom := transfertypes.GetPrefixedDenom("transfer", sgToSlothChannel.Counterparty.ChannelID, s.Stargaze.Config().Denom)
 	starsSrcIBCDenom := transfertypes.ParseDenomTrace(starsSrcDenom).IBCDenom()
@@ -89,11 +89,11 @@ func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 	s.NoError(err)
 	s.Equal(celestiaBalanceBefore.Sub(transferAmount), celestiaBalanceAfter)
 
-	slothStarsBalanceAfter, err := s.Slothchain.GetBalance(s.Ctx, slothUserAddr, starsSrcIBCDenom)
+	slothStarsBalanceAfter, err := s.LazyChain.GetBalance(s.Ctx, slothUserAddr, starsSrcIBCDenom)
 	s.NoError(err)
 	s.Equal(transferAmount, slothStarsBalanceAfter)
 
-	slothTiaBalanceAfter, err := s.Slothchain.GetBalance(s.Ctx, slothUserAddr, tiaSrcIBCDenom)
+	slothTiaBalanceAfter, err := s.LazyChain.GetBalance(s.Ctx, slothUserAddr, tiaSrcIBCDenom)
 	s.NoError(err)
 	s.Equal(transferAmount, slothTiaBalanceAfter)
 
@@ -103,7 +103,7 @@ func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 		Denom:   starsSrcIBCDenom,
 		Amount:  transferAmount,
 	}
-	_, err = s.Slothchain.SendIBCTransfer(s.Ctx, sgToSlothChannel.Counterparty.ChannelID, slothUserAddr, sgTransfer, ibc.TransferOptions{})
+	_, err = s.LazyChain.SendIBCTransfer(s.Ctx, sgToSlothChannel.Counterparty.ChannelID, slothUserAddr, sgTransfer, ibc.TransferOptions{})
 	s.NoError(err)
 
 	celestiaTransfer = ibc.WalletAmount{
@@ -111,10 +111,10 @@ func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 		Denom:   tiaSrcIBCDenom,
 		Amount:  transferAmount,
 	}
-	_, err = s.Slothchain.SendIBCTransfer(s.Ctx, celestiaToSlothChannel.Counterparty.ChannelID, slothUserAddr, celestiaTransfer, ibc.TransferOptions{})
+	_, err = s.LazyChain.SendIBCTransfer(s.Ctx, celestiaToSlothChannel.Counterparty.ChannelID, slothUserAddr, celestiaTransfer, ibc.TransferOptions{})
 	s.NoError(err)
 
-	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.Slothchain, s.Stargaze))
+	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.LazyChain, s.Stargaze))
 
 	sgBalanceFinal, err := s.Stargaze.GetBalance(s.Ctx, sgUserAddr, s.Stargaze.Config().Denom)
 	s.NoError(err)
@@ -124,11 +124,11 @@ func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 	s.NoError(err)
 	s.Equal(celestiaBalanceBefore, celestiaBalanceFinal)
 
-	slothStarsBalanceFinal, err := s.Slothchain.GetBalance(s.Ctx, slothUserAddr, starsSrcIBCDenom)
+	slothStarsBalanceFinal, err := s.LazyChain.GetBalance(s.Ctx, slothUserAddr, starsSrcIBCDenom)
 	s.NoError(err)
 	s.Equal(math.NewInt(0), slothStarsBalanceFinal)
 
-	slothTiaBalanceFinal, err := s.Slothchain.GetBalance(s.Ctx, slothUserAddr, tiaSrcIBCDenom)
+	slothTiaBalanceFinal, err := s.LazyChain.GetBalance(s.Ctx, slothUserAddr, tiaSrcIBCDenom)
 	s.NoError(err)
 	s.Equal(math.NewInt(0), slothTiaBalanceFinal)
 }
@@ -137,11 +137,11 @@ func (s *ICS20TestSuite) TestTIAGasToken() {
 	s.NotNil(s.Interchain)
 
 	celestiaUser := interchaintest.GetAndFundTestUsers(s.T(), s.Ctx, s.T().Name(), math.NewInt(10_000_000_000), s.Celestia)[0]
-	slothUser, err := s.Slothchain.BuildWallet(s.Ctx, "slothUser", "")
+	slothUser, err := s.LazyChain.BuildWallet(s.Ctx, "slothUser", "")
 	s.NoError(err)
 
 	// Transfer TIA to relayer wallet + our user
-	relayerWallet, found := s.Relayer.GetWallet(s.Slothchain.Config().ChainID)
+	relayerWallet, found := s.Relayer.GetWallet(s.LazyChain.Config().ChainID)
 	s.Require().True(found)
 
 	s.NoError(s.Relayer.StartRelayer(s.Ctx, s.RelayerExecRep, s.StargazeSlothPath, s.CelestiaSlothPath))
@@ -154,7 +154,7 @@ func (s *ICS20TestSuite) TestTIAGasToken() {
 		},
 	)
 
-	celestiaToSlothChannel, err := ibc.GetTransferChannel(s.Ctx, s.Relayer, s.RelayerExecRep, s.Celestia.Config().ChainID, s.Slothchain.Config().ChainID)
+	celestiaToSlothChannel, err := ibc.GetTransferChannel(s.Ctx, s.Relayer, s.RelayerExecRep, s.Celestia.Config().ChainID, s.LazyChain.Config().ChainID)
 	s.NoError(err)
 
 	var transferAmount = math.NewInt(1_000_000_00)
@@ -172,11 +172,11 @@ func (s *ICS20TestSuite) TestTIAGasToken() {
 	}
 	s.CelestiaIBCTransfer(celestiaToSlothChannel.ChannelID, celestiaUser.KeyName(), celestiaTransfer)
 
-	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.Slothchain, s.Stargaze, s.Celestia))
+	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.LazyChain, s.Stargaze, s.Celestia))
 
 	// Change minimum gas price
-	s.NoError(s.Slothchain.StopAllNodes(s.Ctx))
-	for _, n := range s.Slothchain.Nodes() {
+	s.NoError(s.LazyChain.StopAllNodes(s.Ctx))
+	for _, n := range s.LazyChain.Nodes() {
 		s.NoError(testutil.ModifyTomlConfigFile(
 			s.Ctx,
 			zaptest.NewLogger(s.T()),
@@ -189,22 +189,22 @@ func (s *ICS20TestSuite) TestTIAGasToken() {
 			},
 		))
 	}
-	s.NoError(s.Slothchain.StartAllNodes(s.Ctx))
+	s.NoError(s.LazyChain.StartAllNodes(s.Ctx))
 
-	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.Slothchain, s.Stargaze, s.Celestia))
+	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.LazyChain, s.Stargaze, s.Celestia))
 
-	newWallet, err := s.Slothchain.BuildWallet(s.Ctx, "newWallet", "")
+	newWallet, err := s.LazyChain.BuildWallet(s.Ctx, "newWallet", "")
 	s.NoError(err)
-	_, err = s.Slothchain.GetNode().ExecTx(s.Ctx,
+	_, err = s.LazyChain.GetNode().ExecTx(s.Ctx,
 		slothUser.KeyName(), "bank", "send", slothUser.KeyName(), newWallet.FormattedAddress(),
 		"42000000ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA",
 		"--gas-prices", "0.025ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA",
 	)
 	s.NoError(err)
 
-	slothUserBal, err := s.Slothchain.GetBalance(s.Ctx, slothUser.FormattedAddress(), "ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA")
+	slothUserBal, err := s.LazyChain.GetBalance(s.Ctx, slothUser.FormattedAddress(), "ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA")
 	s.NoError(err)
-	newWalletBal, err := s.Slothchain.GetBalance(s.Ctx, newWallet.FormattedAddress(), "ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA")
+	newWalletBal, err := s.LazyChain.GetBalance(s.Ctx, newWallet.FormattedAddress(), "ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA")
 	s.NoError(err)
 
 	fmt.Println(slothUserBal.String())

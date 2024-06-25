@@ -23,30 +23,30 @@ import (
 )
 
 type NFTSetup struct {
-	SGICS721Contract                      string
-	SlothChainICS721Contract              string
-	SlothChainICS721IncomingProxyContract string
-	SlothContract                         string
-	SGPort                                string
-	SGChannel                             string
-	SlothPort                             string
-	SlothChainChannel                     string
+	SGICS721Contract                     string
+	LazyChainICS721Contract              string
+	LazyChainICS721IncomingProxyContract string
+	CelestineSlothsContract              string
+	SGPort                               string
+	SGChannel                            string
+	LazyChainPort                        string
+	LazyChainChannel                     string
 }
 
 func (s *InterchainValues) DeployNFTSetup(sgUser ibc.Wallet, slothUser ibc.Wallet, artifactsPath string) NFTSetup {
 	sgCW721CodeID := s.StoreCW721(s.Stargaze, sgUser.KeyName(), artifactsPath)
-	slothCW721CodeID := s.StoreCW721(s.Slothchain, slothUser.KeyName(), artifactsPath)
+	slothCW721CodeID := s.StoreCW721(s.LazyChain, slothUser.KeyName(), artifactsPath)
 
 	slothContract := s.DeploySloths(slothCW721CodeID, sgUser)
 	s.MintNFTs(slothContract, sgUser.KeyName(), sgUser.FormattedAddress(), []string{"1", "2", "3"})
 
-	// Deploy incoming proxy contract on Slothchain
-	slothChainICS721Contract := s.DeployICS721(s.Slothchain, slothUser, artifactsPath, slothCW721CodeID)
+	// Deploy incoming proxy contract on LazyChain
+	lazyChainICS721Contract := s.DeployICS721(s.LazyChain, slothUser, artifactsPath, slothCW721CodeID)
 
 	sgICS721Contract := s.DeployICS721(s.Stargaze, sgUser, artifactsPath, sgCW721CodeID)
 
 	sgPortName := fmt.Sprintf("wasm.%s", sgICS721Contract)
-	slothPortName := fmt.Sprintf("wasm.%s", slothChainICS721Contract)
+	slothPortName := fmt.Sprintf("wasm.%s", lazyChainICS721Contract)
 	channelOpts := ibc.CreateChannelOptions{
 		SourcePortName: sgPortName,
 		DestPortName:   slothPortName,
@@ -59,28 +59,28 @@ func (s *InterchainValues) DeployNFTSetup(sgUser ibc.Wallet, slothUser ibc.Walle
 	channels, err := s.Relayer.GetChannels(s.Ctx, s.RelayerExecRep, s.Stargaze.Config().ChainID)
 	s.NoError(err)
 	var sgChannel string
-	var slothChainChannel string
+	var lazyChainChannel string
 	for _, channel := range channels {
 		if channel.PortID == sgPortName {
 			sgChannel = channel.ChannelID
-			slothChainChannel = channel.Counterparty.ChannelID
+			lazyChainChannel = channel.Counterparty.ChannelID
 		}
 	}
 	s.NotEmpty(sgChannel)
-	s.NotEmpty(slothChainChannel)
+	s.NotEmpty(lazyChainChannel)
 
-	ics721IncomingProxyContract := s.DeployICS721IncomingProxy(s.Slothchain, slothUser, artifactsPath, slothChainICS721Contract, slothContract, slothChainChannel)
-	s.MigrateICS721(s.Slothchain, slothUser.KeyName(), artifactsPath, slothChainICS721Contract, ics721IncomingProxyContract, slothCW721CodeID)
+	ics721IncomingProxyContract := s.DeployICS721IncomingProxy(s.LazyChain, slothUser, artifactsPath, lazyChainICS721Contract, slothContract, lazyChainChannel)
+	s.MigrateICS721(s.LazyChain, slothUser.KeyName(), artifactsPath, lazyChainICS721Contract, ics721IncomingProxyContract, slothCW721CodeID)
 
 	return NFTSetup{
-		SGICS721Contract:                      sgICS721Contract,
-		SlothChainICS721Contract:              slothChainICS721Contract,
-		SlothChainICS721IncomingProxyContract: ics721IncomingProxyContract,
-		SlothContract:                         slothContract,
-		SGChannel:                             sgChannel,
-		SGPort:                                sgPortName,
-		SlothChainChannel:                     slothChainChannel,
-		SlothPort:                             slothPortName,
+		SGICS721Contract:                     sgICS721Contract,
+		LazyChainICS721Contract:              lazyChainICS721Contract,
+		LazyChainICS721IncomingProxyContract: ics721IncomingProxyContract,
+		CelestineSlothsContract:              slothContract,
+		SGChannel:                            sgChannel,
+		SGPort:                               sgPortName,
+		LazyChainChannel:                     lazyChainChannel,
+		LazyChainPort:                        slothPortName,
 	}
 }
 
@@ -220,24 +220,24 @@ func (s *InterchainValues) MintNFTs(cw721Contract string, sgUserKeyName string, 
 	}
 }
 
-func (s *InterchainValues) TransferSlothToSlothChain(nftSetup NFTSetup, from ibc.Wallet, to ibc.Wallet, tokenId string) (classID string, contractAddress string) {
-	s.NoError(s.TransferNFT(s.Stargaze, from, to, tokenId, nftSetup.SlothContract, nftSetup.SGICS721Contract, nftSetup.SGChannel))
+func (s *InterchainValues) TransferSlothToLazyChain(nftSetup NFTSetup, from ibc.Wallet, to ibc.Wallet, tokenId string) (classID string, contractAddress string) {
+	s.NoError(s.TransferNFT(s.Stargaze, from, to, tokenId, nftSetup.CelestineSlothsContract, nftSetup.SGICS721Contract, nftSetup.SGChannel))
 
-	s.NoError(testutil.WaitForBlocks(s.Ctx, 10, s.Stargaze, s.Slothchain, s.Celestia))
+	s.NoError(testutil.WaitForBlocks(s.Ctx, 10, s.Stargaze, s.LazyChain, s.Celestia))
 
 	type Response struct {
 		Data [][]string `json:"data"`
 	}
 	var resp Response
-	s.NoError(s.Slothchain.QueryContract(s.Ctx, nftSetup.SlothChainICS721Contract, "{\"nft_contracts\": {}}", &resp))
+	s.NoError(s.LazyChain.QueryContract(s.Ctx, nftSetup.LazyChainICS721Contract, "{\"nft_contracts\": {}}", &resp))
 
 	s.Len(resp.Data, 1)
 
 	return resp.Data[0][0], resp.Data[0][1]
 }
 
-func (s *InterchainValues) TransferSlothToStargaze(nftSetup NFTSetup, from ibc.Wallet, to ibc.Wallet, tokenId string, slothContractOnSlothChain string) {
-	s.NoError(s.TransferNFT(s.Slothchain, from, to, tokenId, slothContractOnSlothChain, nftSetup.SlothChainICS721Contract, nftSetup.SlothChainChannel))
+func (s *InterchainValues) TransferSlothToStargaze(nftSetup NFTSetup, from ibc.Wallet, to ibc.Wallet, tokenId string, slothsContractOnLazyChain string) {
+	s.NoError(s.TransferNFT(s.LazyChain, from, to, tokenId, slothsContractOnLazyChain, nftSetup.LazyChainICS721Contract, nftSetup.LazyChainChannel))
 }
 
 func (s *InterchainValues) TransferNFT(chain *cosmos.CosmosChain, from ibc.Wallet, to ibc.Wallet, tokenID string, nftContract string, ics721Contract string, channel string) error {

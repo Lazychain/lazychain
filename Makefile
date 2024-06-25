@@ -1,8 +1,8 @@
 #!/usr/bin/make -f
 
 BINDIR ?= $(GOPATH)/bin
-BINARY_NAME := "slothchaind"
-CHAIN_NAME := "slothchain"
+BINARY_NAME := "lazychaind"
+CHAIN_NAME := "lazychain"
 VERSION := $(shell echo $(shell git describe --tags) | sed 's/^v//')
 COMMIT := $(shell git log -1 --format='%H')
 LEDGER_ENABLED ?= true
@@ -115,11 +115,11 @@ build-windows-amd64: go.sum
 	LEDGER_ENABLED=false GOOS=windows GOARCH=amd64 $(MAKE) build
 
 go-mod-cache: go.sum
-	@echo "--> Download go modules to local cache"
+	@echo "--> Download go modules to local cache 💤"
 	@go mod download
 
 go.sum: go.mod
-	@echo "--> Ensure dependencies have not been modified"
+	@echo "--> Ensure dependencies have not been modified 💤"
 	@go mod verify
 
 clean:
@@ -131,33 +131,33 @@ clean:
 ###############################################################################
 
 local-docker:
-	@echo "Building slothchain:local"
-	@docker build -t slothchain:local .
+	@echo "Building lazychain:local 💤"
+	@docker build -t lazychain:local .
 
 ###############################################################################
 ###                              Run locally                                ###
 ###############################################################################
 
-localinterslothchain:
-	@echo "Spinning up localinterslothchain environment"
-	@cd interslothtest && go run ./localinterslothchain
+local-interchaintest:
+	@echo "Spinning up local interchain environment 💤"
+	@cd interchaintest && go run ./local-interchain
 
 ###############################################################################
-###                                Linting                                  ###
+###                                Testing                                  ###
 ###############################################################################
 
-interslothtest:
-	@echo "Running interslothtest"
-	@cd interslothtest && go test -race -v -run TestICS20TestSuite/TestIBCTokenTransfers ./...
-	@cd interslothtest && go test -race -v -run TestICS20TestSuite/TestTIAGasToken ./...
-	@cd interslothtest && go test -race -v -run TestICS721TestSuite/TestICS721 ./...
+interchaintest:
+	@echo "Running interchaintest 💤"
+	@cd interchaintest && go test -race -v -run TestICS20TestSuite/TestIBCTokenTransfers ./...
+	@cd interchaintest && go test -race -v -run TestICS20TestSuite/TestTIAGasToken ./...
+	@cd interchaintest && go test -race -v -run TestICS721TestSuite/TestICS721 ./...
 
 ###############################################################################
 ###                                Linting                                  ###
 ###############################################################################
 
 lint:
-	@echo "--> Running linter"
+	@echo "--> Running linter 💤"
 	@go run github.com/golangci/golangci-lint/cmd/golangci-lint run --timeout=10m
 
 format:

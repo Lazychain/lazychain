@@ -69,26 +69,26 @@ import (
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	"github.com/gjermundgaraba/slothchain/docs"
+	"github.com/Lazychain/lazychain/docs"
 )
 
 var (
 	AccountAddressPrefix = "lazy"
-	Name                 = "slothchain"
+	Name                 = "lazychain"
 )
 
 // DefaultNodeHome default home directories for the application daemon
 var DefaultNodeHome string
 
 var (
-	_ runtime.AppI            = (*SlothApp)(nil)
-	_ servertypes.Application = (*SlothApp)(nil)
+	_ runtime.AppI            = (*LazyApp)(nil)
+	_ servertypes.Application = (*LazyApp)(nil)
 )
 
-// SlothApp extends an ABCI application, but with most of its parameters exported.
+// LazyApp extends an ABCI application, but with most of its parameters exported.
 // They are exported for convenience in creating helper functions, as object
 // capabilities aren't needed for testing.
-type SlothApp struct {
+type LazyApp struct {
 	*runtime.App
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
@@ -157,7 +157,7 @@ func Config() depinject.Config {
 	)
 }
 
-// New returns a reference to an initialized SlothApp.
+// New returns a reference to an initialized LazyApp.
 func New(
 	logger log.Logger,
 	db dbm.DB,
@@ -165,9 +165,9 @@ func New(
 	loadLatest bool,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) (*SlothApp, error) {
+) (*LazyApp, error) {
 	var (
-		app        = &SlothApp{}
+		app        = &LazyApp{}
 		appBuilder *runtime.AppBuilder
 
 		// merge the Config and other configuration in one config
@@ -176,10 +176,10 @@ func New(
 			depinject.Supply(
 				// Supply the application options
 				appOpts,
-				// Supply with IBC keeper getter for the IBC modules with SlothApp Wiring.
+				// Supply with IBC keeper getter for the IBC modules with LazyApp Wiring.
 				// The IBC Keeper cannot be passed because it has not been initiated yet.
 				// Passing the getter, the app IBC Keeper will always be accessible.
-				// This needs to be removed after IBC supports SlothApp Wiring.
+				// This needs to be removed after IBC supports LazyApp Wiring.
 				app.GetIBCKeeper,
 				app.GetCapabilityScopedKeeper,
 				// Supply the logger
@@ -259,13 +259,13 @@ func New(
 	//
 	// Example:
 	//
-	// app.SlothApp = appBuilder.Build(...)
+	// app.LazyApp = appBuilder.Build(...)
 	// nonceMempool := mempool.NewSenderNonceMempool()
-	// abciPropHandler := NewDefaultProposalHandler(nonceMempool, app.SlothApp.BaseApp)
+	// abciPropHandler := NewDefaultProposalHandler(nonceMempool, app.LazyApp.BaseApp)
 	//
-	// app.SlothApp.BaseApp.SetMempool(nonceMempool)
-	// app.SlothApp.BaseApp.SetPrepareProposal(abciPropHandler.PrepareProposalHandler())
-	// app.SlothApp.BaseApp.SetProcessProposal(abciPropHandler.ProcessProposalHandler())
+	// app.LazyApp.BaseApp.SetMempool(nonceMempool)
+	// app.LazyApp.BaseApp.SetPrepareProposal(abciPropHandler.PrepareProposalHandler())
+	// app.LazyApp.BaseApp.SetProcessProposal(abciPropHandler.ProcessProposalHandler())
 	//
 	// Alternatively, you can construct BaseApp options, append those to
 	// baseAppOptions and pass them to the appBuilder.
@@ -316,7 +316,7 @@ func New(
 	//
 	// app.SetInitChainer(func(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	// 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
-	// 	return app.SlothApp.InitChainer(ctx, req)
+	// 	return app.LazyApp.InitChainer(ctx, req)
 	// })
 
 	if err := app.Load(loadLatest); err != nil {
@@ -327,24 +327,24 @@ func New(
 		InitializePinnedCodes(app.NewUncachedContext(true, tmproto.Header{}))
 }
 
-// LegacyAmino returns SlothApp's amino codec.
+// LegacyAmino returns LazyApp's amino codec.
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *SlothApp) LegacyAmino() *codec.LegacyAmino {
+func (app *LazyApp) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
-// AppCodec returns SlothApp's app codec.
+// AppCodec returns LazyApp's app codec.
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
-func (app *SlothApp) AppCodec() codec.Codec {
+func (app *LazyApp) AppCodec() codec.Codec {
 	return app.appCodec
 }
 
 // GetKey returns the KVStoreKey for the provided store key.
-func (app *SlothApp) GetKey(storeKey string) *storetypes.KVStoreKey {
+func (app *LazyApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 	kvStoreKey, ok := app.UnsafeFindStoreKey(storeKey).(*storetypes.KVStoreKey)
 	if !ok {
 		return nil
@@ -353,7 +353,7 @@ func (app *SlothApp) GetKey(storeKey string) *storetypes.KVStoreKey {
 }
 
 // GetMemKey returns the MemoryStoreKey for the provided store key.
-func (app *SlothApp) GetMemKey(storeKey string) *storetypes.MemoryStoreKey {
+func (app *LazyApp) GetMemKey(storeKey string) *storetypes.MemoryStoreKey {
 	key, ok := app.UnsafeFindStoreKey(storeKey).(*storetypes.MemoryStoreKey)
 	if !ok {
 		return nil
@@ -362,8 +362,8 @@ func (app *SlothApp) GetMemKey(storeKey string) *storetypes.MemoryStoreKey {
 	return key
 }
 
-// kvStoreKeys returns all the kv store keys registered inside SlothApp.
-func (app *SlothApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
+// kvStoreKeys returns all the kv store keys registered inside LazyApp.
+func (app *LazyApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 	keys := make(map[string]*storetypes.KVStoreKey)
 	for _, k := range app.GetStoreKeys() {
 		if kv, ok := k.(*storetypes.KVStoreKey); ok {
@@ -375,29 +375,29 @@ func (app *SlothApp) kvStoreKeys() map[string]*storetypes.KVStoreKey {
 }
 
 // GetSubspace returns a param subspace for a given module name.
-func (app *SlothApp) GetSubspace(moduleName string) paramstypes.Subspace {
+func (app *LazyApp) GetSubspace(moduleName string) paramstypes.Subspace {
 	subspace, _ := app.ParamsKeeper.GetSubspace(moduleName)
 	return subspace
 }
 
 // GetIBCKeeper returns the IBC keeper.
-func (app *SlothApp) GetIBCKeeper() *ibckeeper.Keeper {
+func (app *LazyApp) GetIBCKeeper() *ibckeeper.Keeper {
 	return app.IBCKeeper
 }
 
 // GetCapabilityScopedKeeper returns the capability scoped keeper.
-func (app *SlothApp) GetCapabilityScopedKeeper(moduleName string) capabilitykeeper.ScopedKeeper {
+func (app *LazyApp) GetCapabilityScopedKeeper(moduleName string) capabilitykeeper.ScopedKeeper {
 	return app.CapabilityKeeper.ScopeToModule(moduleName)
 }
 
 // SimulationManager implements the SimulationApp interface.
-func (app *SlothApp) SimulationManager() *module.SimulationManager {
+func (app *LazyApp) SimulationManager() *module.SimulationManager {
 	return app.sm
 }
 
 // RegisterAPIRoutes registers all application module routes with the provided
 // API server.
-func (app *SlothApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
+func (app *LazyApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	app.App.RegisterAPIRoutes(apiSvr, apiConfig)
 	// register swagger API in app.go so that other applications can override easily
 	if err := server.RegisterSwaggerAPI(apiSvr.ClientCtx, apiSvr.Router, apiConfig.Swagger); err != nil {

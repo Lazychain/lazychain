@@ -11,7 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
 
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
+	"github.com/Lazychain/lazychain/cmd/lazychaind/cmd/lazycommandutils"
 )
 
 type Data struct {
@@ -62,7 +62,7 @@ func QuerySlothsCmd() *cobra.Command {
 				if isStargaze {
 					networkInfo = lazycommandutils.ICS721Testnets.Stargaze
 				} else {
-					networkInfo = lazycommandutils.ICS721Testnets.Slothchain
+					networkInfo = lazycommandutils.ICS721Testnets.LazyChain
 				}
 
 				nftContract = networkInfo.NFTContract
@@ -122,7 +122,7 @@ func QuerySlothsCmd() *cobra.Command {
 	sdkflags.AddQueryFlagsToCmd(cmd)
 	nodeFlag := cmd.Flags().Lookup(sdkflags.FlagNode)
 	nodeFlag.DefValue = ""
-	nodeFlag.Usage = "RPC endpoint of chain to query (stargaze or slothchain)"
+	nodeFlag.Usage = "RPC endpoint of chain to query (Stargaze or LazyChain)"
 
 	return cmd
 }

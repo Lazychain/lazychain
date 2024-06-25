@@ -1,4 +1,4 @@
-module github.com/gjermundgaraba/slothchain
+module github.com/Lazychain/lazychain
 
 go 1.22
 

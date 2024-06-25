@@ -8,7 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 
-	"github.com/gjermundgaraba/slothchain/app"
+	"github.com/Lazychain/lazychain/app"
 )
 
 type (

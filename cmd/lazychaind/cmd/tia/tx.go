@@ -17,7 +17,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
+	"github.com/Lazychain/lazychain/cmd/lazychaind/cmd/lazycommandutils"
 )
 
 func GetTxCmd() *cobra.Command {
@@ -36,7 +36,7 @@ func GetTxCmd() *cobra.Command {
 func TransferCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "transfer [from_address] [to_address] [amount]",
-		Short: "Transfer TIA tokens between celestia and slothchain (both ways)",
+		Short: "Transfer TIA tokens between Celestia and LazyChain (both ways)",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			from := args[0]
@@ -56,10 +56,10 @@ func TransferCmd() *cobra.Command {
 
 			isCelestia := strings.HasPrefix(from, "celestia")
 			if isCelestia && !strings.HasPrefix(to, "lazy") {
-				return fmt.Errorf("invalid addresses. Must transfer between celestia and slothchain")
+				return fmt.Errorf("invalid addresses. Must transfer between Celestia and LazyChain")
 			}
 			if !isCelestia && (!strings.HasPrefix(to, "celestia") || !strings.HasPrefix(from, "lazy")) {
-				return fmt.Errorf("invalid addresses. Must transfer between celestia and slothchain")
+				return fmt.Errorf("invalid addresses. Must transfer between Celestia and LazyChain")
 			}
 
 			if !mainnet && !testnet &&
@@ -85,7 +85,7 @@ func TransferCmd() *cobra.Command {
 				if isCelestia {
 					networkInfo = networks.Celestia
 				} else {
-					networkInfo = networks.Slothchain
+					networkInfo = networks.LazyChain
 				}
 
 				denom = networkInfo.ICS20Denom
@@ -158,10 +158,10 @@ func TransferCmd() *cobra.Command {
 
 	sdkflags.AddTxFlagsToCmd(cmd)
 	nodeFlag := cmd.Flags().Lookup(sdkflags.FlagNode)
-	nodeFlag.Usage = "RPC endpoint of sending chain (celestia or slothchain)"
+	nodeFlag.Usage = "RPC endpoint of sending chain (Celestia or LazyChain)"
 	nodeFlag.DefValue = ""
 
-	cmd.Flags().Lookup(sdkflags.FlagChainID).Usage = "Chain ID of sending chain (stargaze or slothchain)"
+	cmd.Flags().Lookup(sdkflags.FlagChainID).Usage = "Chain ID of sending chain (Stargaze or LazyChain)"
 
 	return cmd
 }

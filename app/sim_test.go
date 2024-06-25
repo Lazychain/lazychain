@@ -34,11 +34,11 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	"github.com/gjermundgaraba/slothchain/app"
+	"github.com/Lazychain/lazychain/app"
 )
 
 const (
-	SimAppChainID = "slothchain-simapp"
+	SimAppChainID = "lazychain-simapp"
 )
 
 var FlagEnableStreamingValue bool

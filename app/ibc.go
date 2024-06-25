@@ -34,7 +34,7 @@ import (
 )
 
 // registerIBCModules register IBC keepers and non dependency inject modules.
-func (app *SlothApp) registerIBCModules(appOpts servertypes.AppOptions) error {
+func (app *LazyApp) registerIBCModules(appOpts servertypes.AppOptions) error {
 	// set up non depinject support modules store keys
 	if err := app.RegisterStores(
 		storetypes.NewKVStoreKey(capabilitytypes.StoreKey),
