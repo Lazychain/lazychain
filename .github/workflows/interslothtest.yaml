@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: lazychain
-  LAZYCHAIN_IMAGE_REPOSITORY: ghcr.io/Lazychain/lazychain
+  LAZYCHAIN_IMAGE_REPOSITORY: ghcr.io/lazychain/lazychain
   LAZYCHAIN_IMAGE_VERSION: latest # TODO: It would be better to get a specific version of the image
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ghcr.io/Lazychain/lazychain:latest # TODO: It would better to create a commit specific tag
+          tags: ghcr.io/lazychain/lazychain:latest # TODO: It would better to create a commit specific tag
 
   interchaintest:
     runs-on: ubuntu-latest
