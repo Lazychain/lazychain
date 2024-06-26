@@ -6,8 +6,8 @@ import (
 
 // Not const because we need to give them as pointers later
 var (
-	slothVals          = 1
-	slothFullNodes     = 0
+	lazyVals           = 1
+	lazyFullNodes      = 0
 	celestialVals      = 1
 	celestialFullNodes = 0
 	stargazeVals       = 1
@@ -16,7 +16,7 @@ var (
 	votingPeriod     = "15s"
 	maxDepositPeriod = "10s"
 
-	slothChainId    = "slothtestchain-1"
+	lazyChainId     = "lazytestchain-1"
 	celestiaChainID = "celestiatest-1"
 	sgChainID       = "stargazetest-1"
 )

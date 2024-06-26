@@ -3,10 +3,10 @@ package main
 import (
 	"cosmossdk.io/math"
 	"fmt"
+	"github.com/Lazychain/lazychain/interchaintest/utils"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
-	"interslothtest/utils"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,15 +14,15 @@ import (
 
 const mnemonic = "curve govern feature draw giggle one enemy shop wonder cross castle oxygen business obscure rule detail chaos dirt pause parrot tail lunch merit rely"
 
-type LocalInterslothchain struct {
+type LocalInterchain struct {
 	utils.InterchainValues
 }
 
 func main() {
-	fmt.Println("Running local interslothchain...")
+	fmt.Println("Running LocalInterchain... 💤")
 
-	interchainValues := LocalInterslothchain{}
-	interchainValues.SetupFakeT("localinterslothchain")
+	interchainValues := LocalInterchain{}
+	interchainValues.SetupFakeT("LocalInterchain")
 
 	defer func() {
 		interchainValues.GetFakeT().ActuallyRunCleanups()
@@ -40,9 +40,9 @@ func main() {
 	interchainValues.TestLocalInterChain()
 }
 
-func (s *LocalInterslothchain) TestLocalInterChain() {
+func (s *LocalInterchain) TestLocalInterChain() {
 
-	slothUser, err := interchaintest.GetAndFundTestUserWithMnemonic(s.Ctx, "user", mnemonic, math.NewInt(10_000_000_000), s.Slothchain)
+	slothUser, err := interchaintest.GetAndFundTestUserWithMnemonic(s.Ctx, "user", mnemonic, math.NewInt(10_000_000_000), s.LazyChain)
 	s.NoError(err)
 
 	sgUser, err := interchaintest.GetAndFundTestUserWithMnemonic(s.Ctx, "user", mnemonic, math.NewInt(10_000_000_000), s.Stargaze)
@@ -62,12 +62,12 @@ func (s *LocalInterslothchain) TestLocalInterChain() {
 			}
 		},
 	)
-	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.Stargaze, s.Slothchain))
+	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.Stargaze, s.LazyChain))
 
-	celestiaToSlothChannel, err := ibc.GetTransferChannel(s.Ctx, s.Relayer, s.RelayerExecRep, s.Celestia.Config().ChainID, s.Slothchain.Config().ChainID)
+	celestiaToLazyChainChannel, err := ibc.GetTransferChannel(s.Ctx, s.Relayer, s.RelayerExecRep, s.Celestia.Config().ChainID, s.LazyChain.Config().ChainID)
 	s.NoError(err)
 
-	slothContainer, err := s.Slothchain.GetNode().DockerClient.ContainerInspect(s.Ctx, s.Slothchain.GetNode().ContainerID())
+	slothContainer, err := s.LazyChain.GetNode().DockerClient.ContainerInspect(s.Ctx, s.LazyChain.GetNode().ContainerID())
 	s.NoError(err)
 
 	stargazeContainer, err := s.Stargaze.GetNode().DockerClient.ContainerInspect(s.Ctx, s.Stargaze.GetNode().ContainerID())
@@ -83,8 +83,8 @@ func (s *LocalInterslothchain) TestLocalInterChain() {
 	fmt.Println("Stargaze user address:", sgUser.FormattedAddress())
 	fmt.Println("Celestia user address:", celestiaUser.FormattedAddress())
 	fmt.Println()
-	fmt.Println("Slothchain chain-id:", s.Slothchain.Config().ChainID)
-	fmt.Printf("Slothchain RPC address: tcp://localhost:%s\n", slothContainer.NetworkSettings.Ports["26657/tcp"][0].HostPort)
+	fmt.Println("LazyChain chain-id:", s.LazyChain.Config().ChainID)
+	fmt.Printf("LazyChain RPC address: tcp://localhost:%s\n", slothContainer.NetworkSettings.Ports["26657/tcp"][0].HostPort)
 	fmt.Println("Stargaze chain-id:", s.Stargaze.Config().ChainID)
 	fmt.Printf("Stargaze RPC address: tcp://localhost:%s\n", stargazeContainer.NetworkSettings.Ports["26657/tcp"][0].HostPort)
 	fmt.Println("Celestia chain-id:", s.Celestia.Config().ChainID)
@@ -92,11 +92,11 @@ func (s *LocalInterslothchain) TestLocalInterChain() {
 	fmt.Println()
 	fmt.Println("ICS721 setup deployed")
 	fmt.Println("ICS721 contract on Stargaze:", nftSetup.SGICS721Contract)
-	fmt.Println("ICS721 contract on Sloth chain:", nftSetup.SlothChainICS721Contract)
-	fmt.Println("Sloth contract:", nftSetup.SlothContract)
+	fmt.Println("ICS721 contract on Sloth chain:", nftSetup.LazyChainICS721Contract)
+	fmt.Println("Sloth contract:", nftSetup.CelestineSlothsContract)
 	fmt.Println("Stargaze to Sloth channel:", nftSetup.SGChannel)
-	fmt.Println("Sloth chain to Stargaze channel:", nftSetup.SlothChainChannel)
-	fmt.Println("Celestia to Sloth channel:", celestiaToSlothChannel.ChannelID)
+	fmt.Println("Sloth chain to Stargaze channel:", nftSetup.LazyChainChannel)
+	fmt.Println("Celestia to Sloth channel:", celestiaToLazyChainChannel.ChannelID)
 	fmt.Println()
 	fmt.Println("Press Ctrl+C to stop...")
 

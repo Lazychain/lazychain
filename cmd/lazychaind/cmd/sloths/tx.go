@@ -13,7 +13,7 @@ import (
 	sdkflags "github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 
-	"github.com/gjermundgaraba/slothchain/cmd/slothchaind/cmd/lazycommandutils"
+	"github.com/Lazychain/lazychain/cmd/lazychaind/cmd/lazycommandutils"
 )
 
 func GetTxCmd() *cobra.Command {
@@ -32,7 +32,7 @@ func GetTxCmd() *cobra.Command {
 func TransferSlothCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "transfer [from_address] [to_address] [nft-id]",
-		Short: "Transfer sloth nfts between stargaze and slothchain using ICS721",
+		Short: "Transfer sloth nfts between Stargaze and LazyChain using ICS721",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			from := args[0]
@@ -49,13 +49,13 @@ func TransferSlothCmd() *cobra.Command {
 			mainnet, _ := cmd.Flags().GetBool(lazycommandutils.FlagMainnet)
 			testnet, _ := cmd.Flags().GetBool(lazycommandutils.FlagTestnet)
 
-			// Figure out if we are transferring from stargaze to slothchain or vice versa
+			// Figure out if we are transferring from Stargaze to LazyChain or vice versa
 			isStargaze := strings.HasPrefix(from, "stars")
 			if isStargaze && !strings.HasPrefix(to, "lazy") {
-				return fmt.Errorf("invalid addresses. Must transfer between stargaze and slothchain")
+				return fmt.Errorf("invalid addresses. Must transfer between Stargaze and LazyChain")
 			}
 			if !isStargaze && (!strings.HasPrefix(to, "stars") || !strings.HasPrefix(from, "lazy")) {
-				return fmt.Errorf("invalid addresses. Must transfer between stargaze and slothchain")
+				return fmt.Errorf("invalid addresses. Must transfer between Stargaze and LazyChain")
 			}
 
 			if !mainnet && !testnet &&
@@ -81,7 +81,7 @@ func TransferSlothCmd() *cobra.Command {
 				if isStargaze {
 					networkInfo = networks.Stargaze
 				} else {
-					networkInfo = networks.Slothchain
+					networkInfo = networks.LazyChain
 				}
 
 				chainID = networkInfo.ChainID
@@ -141,10 +141,10 @@ func TransferSlothCmd() *cobra.Command {
 
 	sdkflags.AddTxFlagsToCmd(cmd)
 	nodeFlag := cmd.Flags().Lookup(sdkflags.FlagNode)
-	nodeFlag.Usage = "RPC endpoint of sending chain (stargaze or slothchain)"
+	nodeFlag.Usage = "RPC endpoint of sending chain (Stargaze or LazyChain)"
 	nodeFlag.DefValue = ""
 
-	cmd.Flags().Lookup(sdkflags.FlagChainID).Usage = "Chain ID of sending chain (stargaze or slothchain)"
+	cmd.Flags().Lookup(sdkflags.FlagChainID).Usage = "Chain ID of sending chain (Stargaze or LazyChain)"
 
 	return cmd
 }

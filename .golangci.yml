@@ -55,7 +55,7 @@ linters-settings:
       - prefix(cosmossdk.io)
       - prefix(github.com/cosmos/cosmos-sdk)
       - prefix(github.com/cometbft/cometbft)
-      - prefix(github.com/gjermundgaraba/slothchain)
+      - prefix(github.com/Lazychain/lazychain)
     custom-order: true
   revive:
     enable-all-rules: true

@@ -5,14 +5,14 @@ set -e
 # set variables for the chain
 VALIDATOR_NAME=validator1
 CHAIN_ID=sloth
-BINARY=slothchaind
+BINARY=lazychaind
 KEY_NAME=slothy
 TOKEN_AMOUNT="10000000000000000000000000ulazy"
 STAKING_AMOUNT=1000000000ulazy
 RELAYER_ADDRESS=lazy1avl4q6s02pss5q2ftrkjqaft3jk75q4ldesnwe
 
 echo -e "\n Deleting existing $BINARY data... \n"
-rm -rf "$HOME""/.slothchain"
+rm -rf "$HOME""/.lazychain"
 
 echo -e "\n Building the chain...\n"
 ignite chain build
@@ -41,13 +41,13 @@ $BINARY init $VALIDATOR_NAME --chain-id $CHAIN_ID
 # the sed commands here are editing various configuration settings for the $BINARY instance
 # such as setting minimum gas prices, enabling the api, setting the chain id, setting the rpc address,
 # adjusting time constants, and setting the denomination for bonds and minting.
-sed -i'' -e 's/^minimum-gas-prices *= .*/minimum-gas-prices = "0ulazy"/' "$HOME"/.slothchain/config/app.toml
-sed -i'' -e '/\[api\]/,+3 s/enable *= .*/enable = true/' "$HOME"/.slothchain/config/app.toml
-sed -i'' -e "s/^chain-id *= .*/chain-id = \"$CHAIN_ID\"/" "$HOME"/.slothchain/config/client.toml
-sed -i'' -e '/\[rpc\]/,+3 s/laddr *= .*/laddr = "tcp:\/\/0.0.0.0:26657"/' "$HOME"/.slothchain/config/config.toml
-sed -i'' -e 's/"time_iota_ms": "1000"/"time_iota_ms": "10"/' "$HOME"/.slothchain/config/genesis.json
-sed -i'' -e 's/bond_denom": ".*"/bond_denom": "ulazy"/' "$HOME"/.slothchain/config/genesis.json
-sed -i'' -e 's/mint_denom": ".*"/mint_denom": "ulazy"/' "$HOME"/.slothchain/config/genesis.json
+sed -i'' -e 's/^minimum-gas-prices *= .*/minimum-gas-prices = "0ulazy"/' "$HOME"/.lazychain/config/app.toml
+sed -i'' -e '/\[api\]/,+3 s/enable *= .*/enable = true/' "$HOME"/.lazychain/config/app.toml
+sed -i'' -e "s/^chain-id *= .*/chain-id = \"$CHAIN_ID\"/" "$HOME"/.lazychain/config/client.toml
+sed -i'' -e '/\[rpc\]/,+3 s/laddr *= .*/laddr = "tcp:\/\/0.0.0.0:26657"/' "$HOME"/.lazychain/config/config.toml
+sed -i'' -e 's/"time_iota_ms": "1000"/"time_iota_ms": "10"/' "$HOME"/.lazychain/config/genesis.json
+sed -i'' -e 's/bond_denom": ".*"/bond_denom": "ulazy"/' "$HOME"/.lazychain/config/genesis.json
+sed -i'' -e 's/mint_denom": ".*"/mint_denom": "ulazy"/' "$HOME"/.lazychain/config/genesis.json
 
 # add a key to keyring-backend test
 $BINARY keys add $KEY_NAME --keyring-backend test
@@ -64,9 +64,9 @@ $BINARY genesis collect-gentxs
 
 # copy centralized sequencer address into genesis.json
 # Note: validator and sequencer are used interchangeably here
-ADDRESS=$(jq -r '.address' ~/.slothchain/config/priv_validator_key.json)
-PUB_KEY=$(jq -r '.pub_key' ~/.slothchain/config/priv_validator_key.json)
-jq --argjson pubKey "$PUB_KEY" '.consensus["validators"]=[{"address": "'$ADDRESS'", "pub_key": $pubKey, "power": "1000", "name": "Rollkit Sequencer"}]' ~/.slothchain/config/genesis.json > temp.json && mv temp.json ~/.slothchain/config/genesis.json
+ADDRESS=$(jq -r '.address' ~/.lazychain/config/priv_validator_key.json)
+PUB_KEY=$(jq -r '.pub_key' ~/.lazychain/config/priv_validator_key.json)
+jq --argjson pubKey "$PUB_KEY" '.consensus["validators"]=[{"address": "'$ADDRESS'", "pub_key": $pubKey, "power": "1000", "name": "Rollkit Sequencer"}]' ~/.lazychain/config/genesis.json > temp.json && mv temp.json ~/.lazychain/config/genesis.json
 
 # create a restart-testnet.sh file to restart the chain later
 [ -f restart-$BINARY.sh ] && rm restart-$BINARY.sh

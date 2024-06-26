@@ -26,7 +26,7 @@ FROM alpine:3.16
 
 RUN apk --update add jq
 
-COPY --from=builder /code/build/slothchaind /usr/bin/slothchaind
+COPY --from=builder /code/build/lazychaind /usr/bin/lazychaind
 
 WORKDIR /opt
 

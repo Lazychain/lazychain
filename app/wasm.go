@@ -37,7 +37,7 @@ func AllCapabilities() []string {
 }
 
 // registerWasmModules register CosmWasm keepers and non dependency inject modules.
-func (app *SlothApp) registerWasmModules(
+func (app *LazyApp) registerWasmModules(
 	appOpts servertypes.AppOptions,
 	wasmOpts ...wasmkeeper.Option,
 ) (porttypes.IBCModule, error) {
@@ -118,7 +118,7 @@ func (app *SlothApp) registerWasmModules(
 	return wasmStack, nil
 }
 
-func (app *SlothApp) setPostHandler() error {
+func (app *LazyApp) setPostHandler() error {
 	postHandler, err := posthandler.NewPostHandler(
 		posthandler.HandlerOptions{},
 	)
@@ -129,7 +129,7 @@ func (app *SlothApp) setPostHandler() error {
 	return nil
 }
 
-func (app *SlothApp) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.WasmConfig, txCounterStoreKey *storetypes.KVStoreKey) error {
+func (app *LazyApp) setAnteHandler(txConfig client.TxConfig, wasmConfig wasmtypes.WasmConfig, txCounterStoreKey *storetypes.KVStoreKey) error {
 	anteHandler, err := NewAnteHandler(
 		HandlerOptions{
 			HandlerOptions: ante.HandlerOptions{

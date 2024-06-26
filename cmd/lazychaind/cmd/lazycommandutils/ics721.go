@@ -1,8 +1,8 @@
 package lazycommandutils
 
 type ICS721Networks struct {
-	Slothchain StaticICS721NetworkInfo
-	Stargaze   StaticICS721NetworkInfo
+	LazyChain StaticICS721NetworkInfo
+	Stargaze  StaticICS721NetworkInfo
 }
 
 type StaticICS721NetworkInfo struct {
@@ -17,10 +17,10 @@ type StaticICS721NetworkInfo struct {
 var (
 	ICS721Mainnets = ICS721Networks{} // TODO: Update once mainnet
 	ICS721Testnets = ICS721Networks{
-		Slothchain: StaticICS721NetworkInfo{
-			ChainID:        testnetSlothchainChainID,
-			Node:           testnetSlothchainNode,
-			GasPrices:      testnetSlothchainGasPrices,
+		LazyChain: StaticICS721NetworkInfo{
+			ChainID:        testnetLazyChainChainID,
+			Node:           testnetLazyChainNode,
+			GasPrices:      testnetLazyChainGasPrices,
 			NFTContract:    "lazy1enc8mxs5tsu6zzmvu0uh9snj28yp4nt2xycv3l6054p339gweavqgd224r",
 			ICS721Contract: "lazy1wug8sewp6cedgkmrmvhl3lf3tulagm9hnvy8p0rppz9yjw0g4wtq8xhtac",
 			ICS721Channel:  "channel-1",

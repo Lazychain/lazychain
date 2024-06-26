@@ -16,7 +16,7 @@ import (
 
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
-	"github.com/gjermundgaraba/slothchain/app"
+	"github.com/Lazychain/lazychain/app"
 )
 
 // Profile with:

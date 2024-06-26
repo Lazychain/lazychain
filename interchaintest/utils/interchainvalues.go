@@ -31,9 +31,9 @@ type InterchainValues struct {
 	CelestiaSlothPath string
 	StargazeSlothPath string
 
-	Slothchain *cosmos.CosmosChain
-	Celestia   *cosmos.CosmosChain
-	Stargaze   *cosmos.CosmosChain
+	LazyChain *cosmos.CosmosChain
+	Celestia  *cosmos.CosmosChain
+	Stargaze  *cosmos.CosmosChain
 }
 
 func (s *InterchainValues) SetupFakeT(name string) {
@@ -126,9 +126,9 @@ func (s *InterchainValues) SetupInterchainValues() {
 	s.Interchain = ic
 	cf := s.getChainFactory()
 	chains, err := cf.Chains(s.TT().Name())
-	slothchain, celestia, stargaze := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain)
+	lazyChain, celestia, stargaze := chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain)
 	s.NoError(err)
-	s.Slothchain = slothchain
+	s.LazyChain = lazyChain
 	s.Celestia = celestia
 	s.Stargaze = stargaze
 
@@ -151,14 +151,14 @@ func (s *InterchainValues) SetupInterchainValues() {
 	s.StargazeSlothPath = "sg-sloth-path"
 	ic.AddLink(interchaintest.InterchainLink{
 		Chain1:  stargaze,
-		Chain2:  slothchain,
+		Chain2:  lazyChain,
 		Relayer: r,
 		Path:    s.StargazeSlothPath,
 	})
 	s.CelestiaSlothPath = "celestia-sloth-path"
 	ic.AddLink(interchaintest.InterchainLink{
 		Chain1:  celestia,
-		Chain2:  slothchain,
+		Chain2:  lazyChain,
 		Relayer: r,
 		Path:    s.CelestiaSlothPath,
 	})
@@ -176,10 +176,10 @@ func (s *InterchainValues) SetupInterchainValues() {
 	s.NoError(err)
 
 	// For some reason automated path creation in Build didn't work when doing two paths 🤷
-	s.NoError(s.Relayer.GeneratePath(s.Ctx, s.RelayerExecRep, s.Celestia.Config().ChainID, s.Slothchain.Config().ChainID, s.CelestiaSlothPath))
+	s.NoError(s.Relayer.GeneratePath(s.Ctx, s.RelayerExecRep, s.Celestia.Config().ChainID, s.LazyChain.Config().ChainID, s.CelestiaSlothPath))
 	s.NoError(s.Relayer.LinkPath(s.Ctx, s.RelayerExecRep, s.CelestiaSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
 
-	s.NoError(s.Relayer.GeneratePath(s.Ctx, s.RelayerExecRep, s.Stargaze.Config().ChainID, s.Slothchain.Config().ChainID, s.StargazeSlothPath))
+	s.NoError(s.Relayer.GeneratePath(s.Ctx, s.RelayerExecRep, s.Stargaze.Config().ChainID, s.LazyChain.Config().ChainID, s.StargazeSlothPath))
 	s.NoError(s.Relayer.LinkPath(s.Ctx, s.RelayerExecRep, s.StargazeSlothPath, ibc.DefaultChannelOpts(), ibc.DefaultClientOpts()))
 
 	s.TT().Cleanup(func() {
@@ -188,39 +188,39 @@ func (s *InterchainValues) SetupInterchainValues() {
 }
 
 func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory {
-	slothchainImageRepository := "slothchain"
-	slothchainImageVersion := "local"
-	envImageVersion, found := os.LookupEnv("SLOTHCHAIN_IMAGE_VERSION")
+	lazyChainImageRepository := "lazychain"
+	lazyChainImageVersion := "local"
+	envImageVersion, found := os.LookupEnv("LAZYCHAIN_IMAGE_VERSION")
 	if found {
-		s.TT().Log("SLOTHCHAIN_IMAGE_VERSION from environment found", envImageVersion)
-		slothchainImageVersion = envImageVersion
+		s.TT().Log("LAZYCHAIN_IMAGE_VERSION from environment found", envImageVersion)
+		lazyChainImageVersion = envImageVersion
 	}
-	envImageRepository, found := os.LookupEnv("SLOTHCHAIN_IMAGE_REPOSITORY")
+	envImageRepository, found := os.LookupEnv("LAZYCHAIN_IMAGE_REPOSITORY")
 	if found {
-		s.TT().Log("SLOTHCHAIN_IMAGE_REPOSITORY from environment found", envImageRepository)
-		slothchainImageRepository = envImageRepository
+		s.TT().Log("LAZYCHAIN_IMAGE_REPOSITORY from environment found", envImageRepository)
+		lazyChainImageRepository = envImageRepository
 	}
 
-	s.TT().Log("SLOTHCHAIN_IMAGE_VERSION", slothchainImageVersion)
-	s.TT().Log("SLOTHCHAIN_IMAGE_REPOSITORY", slothchainImageRepository)
+	s.TT().Log("LAZYCHAIN_IMAGE_VERSION", lazyChainImageVersion)
+	s.TT().Log("LAZYCHAIN_IMAGE_REPOSITORY", lazyChainImageRepository)
 
 	return interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(s.TT()), []*interchaintest.ChainSpec{
 		{
-			Name:      "slothchain",
-			ChainName: "slothchain",
-			Version:   slothchainImageVersion,
+			Name:      "lazychain",
+			ChainName: "lazychain",
+			Version:   lazyChainImageVersion,
 			ChainConfig: ibc.ChainConfig{
 				Type:    "cosmos",
-				Name:    "slothchain",
-				ChainID: slothChainId,
+				Name:    "lazychain",
+				ChainID: lazyChainId,
 				Images: []ibc.DockerImage{
 					{
-						Repository: slothchainImageRepository,
-						Version:    slothchainImageVersion,
+						Repository: lazyChainImageRepository,
+						Version:    lazyChainImageVersion,
 						UidGid:     "1025:1025",
 					},
 				},
-				Bin:                 "slothchaind",
+				Bin:                 "lazychaind",
 				Bech32Prefix:        "lazy",
 				Denom:               "useq",
 				CoinType:            "118",
@@ -234,12 +234,12 @@ func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory
 					return sdk.NewInt64Coin("useq", 10_000_000_000_000), sdk.NewInt64Coin("useq", 1_000_000_000)
 				},
 				ModifyGenesis: func(config ibc.ChainConfig, bytes []byte) ([]byte, error) {
-					addressBz, _, err := s.Slothchain.Validators[0].Exec(s.Ctx, []string{"jq", "-r", ".address", "/var/cosmos-chain/slothchain/config/priv_validator_key.json"}, []string{})
+					addressBz, _, err := s.LazyChain.Validators[0].Exec(s.Ctx, []string{"jq", "-r", ".address", "/var/cosmos-chain/lazychain/config/priv_validator_key.json"}, []string{})
 					if err != nil {
 						return nil, err
 					}
 					address := strings.TrimSuffix(string(addressBz), "\n")
-					pubKeyBz, _, err := s.Slothchain.Validators[0].Exec(s.Ctx, []string{"jq", "-r", ".pub_key.value", "/var/cosmos-chain/slothchain/config/priv_validator_key.json"}, []string{})
+					pubKeyBz, _, err := s.LazyChain.Validators[0].Exec(s.Ctx, []string{"jq", "-r", ".pub_key.value", "/var/cosmos-chain/lazychain/config/priv_validator_key.json"}, []string{})
 					if err != nil {
 						return nil, err
 					}
@@ -262,9 +262,9 @@ func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory
 						},
 					}
 
-					name := s.Slothchain.Sidecars[0].HostName()
-					_, _, err = s.Slothchain.Validators[0].Exec(s.Ctx, []string{"sh", "-c", fmt.Sprintf(`echo "[rollkit]
-da_address = \"http://%s:%s\"" >> /var/cosmos-chain/slothchain/config/config.toml`, name, "7980")}, []string{})
+					name := s.LazyChain.Sidecars[0].HostName()
+					_, _, err = s.LazyChain.Validators[0].Exec(s.Ctx, []string{"sh", "-c", fmt.Sprintf(`echo "[rollkit]
+da_address = \"http://%s:%s\"" >> /var/cosmos-chain/lazychain/config/config.toml`, name, "7980")}, []string{})
 					if err != nil {
 						return nil, err
 					}
@@ -289,8 +289,8 @@ da_address = \"http://%s:%s\"" >> /var/cosmos-chain/slothchain/config/config.tom
 					},
 				},
 			},
-			NumValidators: &slothVals,
-			NumFullNodes:  &slothFullNodes,
+			NumValidators: &lazyVals,
+			NumFullNodes:  &lazyFullNodes,
 		},
 		{
 			Name:      "celestia",

@@ -26,10 +26,10 @@ import (
 	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/gjermundgaraba/slothchain/app"
+	"github.com/Lazychain/lazychain/app"
 )
 
-// NewRootCmd creates a new root command for slothchaind. It is called once in the main function.
+// NewRootCmd creates a new root command for lazychaind. It is called once in the main function.
 func NewRootCmd() *cobra.Command {
 	initSDKConfig()
 
@@ -60,7 +60,7 @@ func NewRootCmd() *cobra.Command {
 
 	rootCmd := &cobra.Command{
 		Use:           app.Name + "d",
-		Short:         "Start slothchain node",
+		Short:         "Start lazychain node",
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs

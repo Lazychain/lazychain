@@ -1,4 +1,4 @@
-module interslothtest
+module github.com/Lazychain/lazychain/interchaintest
 
 go 1.22.2
 
