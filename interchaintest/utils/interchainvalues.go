@@ -6,10 +6,12 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdktestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
+	"github.com/pelletier/go-toml/v2"
 	"github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	interchaintestrelayer "github.com/strangelove-ventures/interchaintest/v8/relayer"
+	"github.com/strangelove-ventures/interchaintest/v8/relayer/hermes"
 	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	testifysuite "github.com/stretchr/testify/suite"
@@ -118,6 +120,28 @@ func (s *InterchainValues) Equal(expected, actual interface{}, msgAndArgs ...int
 	}
 }
 
+func (s *InterchainValues) True(value bool) {
+	if s.testifySuiteRef != nil {
+		s.testifySuiteRef.True(value)
+		return
+	}
+
+	if !value {
+		panic("value is not true")
+	}
+}
+
+func (s *InterchainValues) NotNil(value interface{}) {
+	if s.testifySuiteRef != nil {
+		s.testifySuiteRef.NotNil(value)
+		return
+	}
+
+	if value == nil {
+		panic("value is nil")
+	}
+}
+
 func (s *InterchainValues) SetupInterchainValues() {
 	s.Ctx = context.Background()
 
@@ -139,8 +163,10 @@ func (s *InterchainValues) SetupInterchainValues() {
 	client, network := interchaintest.DockerSetup(s.TT())
 
 	rf := interchaintest.NewBuiltinRelayerFactory(
+		//ibc.Hermes,
 		ibc.CosmosRly,
 		zaptest.NewLogger(s.TT()),
+		//interchaintestrelayer.CustomDockerImage("ghcr.io/informalsystems/hermes", "1.10.0", "2000:2000"),
 		interchaintestrelayer.CustomDockerImage("ghcr.io/cosmos/relayer", "latest", "100:1000"),
 		interchaintestrelayer.StartupFlags("--processor", "events", "--block-history", "100"),
 	)
@@ -174,6 +200,10 @@ func (s *InterchainValues) SetupInterchainValues() {
 		SkipPathCreation: true,
 	})
 	s.NoError(err)
+
+	//s.modifyHermesConfig(r.(*hermes.Relayer))
+	//res := s.Relayer.Exec(s.Ctx, eRep, []string{"cat", "/home/hermes/.hermes/config.toml"}, nil)
+	//s.TT().Log(string(res.Stdout))
 
 	// For some reason automated path creation in Build didn't work when doing two paths 🤷
 	s.NoError(s.Relayer.GeneratePath(s.Ctx, s.RelayerExecRep, s.Celestia.Config().ChainID, s.LazyChain.Config().ChainID, s.CelestiaSlothPath))
@@ -224,7 +254,7 @@ func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory
 				Bech32Prefix:        "lazy",
 				Denom:               "useq",
 				CoinType:            "118",
-				GasPrices:           "0ibc/C3E53D20BC7A4CC993B17C7971F8ECD06A433C10B6A96F4C4C3714F0624C56DA",
+				GasPrices:           "0.00useq",
 				GasAdjustment:       2.0,
 				TrustingPeriod:      "112h",
 				NoHostMount:         false,
@@ -311,7 +341,7 @@ da_address = \"http://%s:%s\"" >> /var/cosmos-chain/lazychain/config/config.toml
 				Bech32Prefix:   "celestia",
 				Denom:          "utia",
 				CoinType:       "118",
-				GasPrices:      "0utia",
+				GasPrices:      "0.00utia",
 				GasAdjustment:  2.0,
 				TrustingPeriod: "112h",
 				NoHostMount:    false,
@@ -344,7 +374,7 @@ da_address = \"http://%s:%s\"" >> /var/cosmos-chain/lazychain/config/config.toml
 				Name:           "stargaze",
 				ChainID:        sgChainID,
 				CoinType:       "118",
-				GasPrices:      "0stars",
+				GasPrices:      "0.00ustars",
 				GasAdjustment:  2.0,
 				EncodingConfig: getEncodingConfig(),
 			},
@@ -362,4 +392,42 @@ func getEncodingConfig() *sdktestutil.TestEncodingConfig {
 	wasm.RegisterInterfaces(cfg.InterfaceRegistry)
 
 	return &cfg
+}
+
+func (s *InterchainValues) modifyHermesConfig(h *hermes.Relayer) {
+	bz, err := h.ReadFileFromHomeDir(s.Ctx, ".hermes/config.toml")
+	s.NoError(err)
+
+	var config map[string]interface{}
+	err = toml.Unmarshal(bz, &config)
+	s.NoError(err)
+
+	chains, ok := config["chains"].([]interface{})
+	s.True(ok)
+	var celestia, lazychain map[string]interface{}
+	for _, ci := range chains {
+		c, ok := ci.(map[string]interface{})
+		s.True(ok)
+		if c["id"] == celestiaChainID {
+			celestia = c
+		} else if c["id"] == lazyChainId {
+			lazychain = c
+		}
+	}
+	s.NotNil(celestia)
+
+	celestia["compat_mode"] = "0.34"
+
+	lazychain["event_source"] = map[string]interface{}{
+		"mode":        "pull",
+		"interval":    "1s",
+		"max_retries": 20,
+	}
+	//lazychain["compat_mode"] = "0.37"
+
+	bz, err = toml.Marshal(config)
+	s.NoError(err)
+
+	err = h.WriteFileToHomeDir(s.Ctx, ".hermes/config.toml", bz)
+	s.NoError(err)
 }

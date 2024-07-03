@@ -114,7 +114,7 @@ func (s *ICS20TestSuite) TestIBCTokenTransfers() {
 	_, err = s.LazyChain.SendIBCTransfer(s.Ctx, celestiaToSlothChannel.Counterparty.ChannelID, slothUserAddr, celestiaTransfer, ibc.TransferOptions{})
 	s.NoError(err)
 
-	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.LazyChain, s.Stargaze))
+	s.NoError(testutil.WaitForBlocks(s.Ctx, 5, s.LazyChain, s.Stargaze, s.Celestia))
 
 	sgBalanceFinal, err := s.Stargaze.GetBalance(s.Ctx, sgUserAddr, s.Stargaze.Config().Denom)
 	s.NoError(err)
