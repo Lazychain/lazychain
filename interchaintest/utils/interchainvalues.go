@@ -311,8 +311,6 @@ func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory
 						},
 					}
 
-					// '.app_state .sequencer["sequencers"]=[{"name": "test-1", "consensus_pubkey": {"@type": "/cosmos.crypto.ed25519.PubKey","key":$pubKey}}]'
-
 					name := s.LazyChain.Sidecars[0].HostName()
 					_, _, err = s.LazyChain.Validators[0].Exec(s.Ctx, []string{"sh", "-c", fmt.Sprintf(`echo "[rollkit]
 da_address = \"http://%s:%s\"" >> /var/cosmos-chain/lazychain/config/config.toml`, name, "7980")}, []string{})
