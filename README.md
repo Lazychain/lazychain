@@ -88,6 +88,19 @@ Celestia to Sloth channel: channel-0
 Press Ctrl+C to stop...
 ```
 
+### Running just LazyChain locally
+
+You can also spin up LazyChain alone (without using interhcaintest and docker) using the `init.sh` script.
+
+Prerequisites:
+- `jq` installed
+- `LazyChain` installed (install with `make install`)
+- A running celestia light client on mocha testnet (see [Setting up a Celestia light node](https://docs.celestia.org/nodes/light-node))
+
+```Bash
+$ ./init.sh
+```
+
 ### Commands
 
 The `lazychaind` binary has some built-in commands to interact directly with the sloths.
