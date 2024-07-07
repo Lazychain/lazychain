@@ -153,7 +153,7 @@ func newApp(
 ) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
 
-	slothApp, err := app.New(
+	lazyApp, err := app.New(
 		logger, db, traceStore, true,
 		appOpts,
 		baseappOptions...,
@@ -161,7 +161,7 @@ func newApp(
 	if err != nil {
 		panic(err)
 	}
-	return slothApp
+	return lazyApp
 }
 
 // appExport creates a new app (optionally at a given height) and exports state.

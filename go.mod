@@ -32,7 +32,7 @@ require (
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/cosmos/ibc-go/modules/capability v1.0.0
 	github.com/cosmos/ibc-go/v8 v8.2.0
-	github.com/decentrio/rollkit-sdk v0.1.0-rc0.0.20240611072137-598ea6e19f2b
+	github.com/decentrio/rollkit-sdk v0.2.0-rc0
 	github.com/golangci/golangci-lint v1.52.0
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0

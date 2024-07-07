@@ -597,8 +597,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8Yc
 github.com/davidlazar/go-crypto v0.0.0-20170701192655-dcfb0a7ac018/go.mod h1:rQYf4tfk5sSwFsnDg3qYaBxSjsD9S8+59vW0dKUgme4=
 github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c h1:pFUpOrbxDR6AkioZ1ySsx5yxlDQZ8stG2b88gTPxgJU=
 github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c/go.mod h1:6UhI8N9EjYm1c2odKpFpAYeR8dsBeM7PtzQhRgxRr9U=
-github.com/decentrio/rollkit-sdk v0.1.0-rc0.0.20240611072137-598ea6e19f2b h1:UfCzuAVsEyY//wSYCo1ya4M0DY8U+uBBKkiQCWrAh0s=
-github.com/decentrio/rollkit-sdk v0.1.0-rc0.0.20240611072137-598ea6e19f2b/go.mod h1:kTs90zQLN8654rHVA5jSqNYvTssU27zBWELMTHvb5qE=
+github.com/decentrio/rollkit-sdk v0.2.0-rc0 h1:dFMsycGblB/pUMyPzZS+F7NMant6Lt1GK+N81uVwt94=
+github.com/decentrio/rollkit-sdk v0.2.0-rc0/go.mod h1:jic3yhkxj9t9pXuJWiLQvIyahzD4yhYFIlhOelOjNNo=
 github.com/decred/dcrd/crypto/blake256 v1.0.1 h1:7PltbUIQB7u/FfZ39+DGa/ShuMyJ5ilcvdfma9wOH6Y=
 github.com/decred/dcrd/crypto/blake256 v1.0.1/go.mod h1:2OfgNZ5wDpcsFmHmCK5gZTPcCXqlm2ArzUIkw9czNJo=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 h1:rpfIENRNNilwHwZeG5+P150SMrnNEcHYvcCuK6dPZSg=

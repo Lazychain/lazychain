@@ -11,6 +11,8 @@ import (
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	sequencerkeeper "github.com/decentrio/rollkit-sdk/x/sequencer/keeper"
+	rollkitstakingkeeper "github.com/decentrio/rollkit-sdk/x/staking/keeper"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1"                            // import for side-effects
 	_ "cosmossdk.io/x/circuit"                                          // import for side-effects
@@ -28,6 +30,8 @@ import (
 	_ "github.com/cosmos/ibc-go/modules/capability"                     // import for side-effects
 	_ "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts" // import for side-effects
 	_ "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"                 // import for side-effects
+	_ "github.com/decentrio/rollkit-sdk/x/sequencer"                    // import for side-effects
+	_ "github.com/decentrio/rollkit-sdk/x/staking"                      // import for side-effects
 
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
@@ -36,8 +40,6 @@ import (
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 
-	"github.com/Lazychain/lazychain/docs"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -59,11 +61,17 @@ import (
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
-	sequencerkeeper "github.com/decentrio/rollkit-sdk/x/sequencer/keeper"
-	rollkitstakingkeeper "github.com/decentrio/rollkit-sdk/x/staking/keeper"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+
+	"github.com/Lazychain/lazychain/docs"
 )
 
 var (
@@ -94,6 +102,7 @@ type LazyApp struct {
 	BankKeeper            bankkeeper.Keeper
 	StakingKeeper         *rollkitstakingkeeper.Keeper
 	DistrKeeper           distrkeeper.Keeper
+	GovKeeper             *govkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 
 	CrisisKeeper         *crisiskeeper.Keeper
@@ -144,6 +153,11 @@ func Config() depinject.Config {
 			// supply custom module basics
 			map[string]module.AppModuleBasic{
 				genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+				govtypes.ModuleName: gov.NewAppModuleBasic(
+					[]govclient.ProposalHandler{
+						paramsclient.ProposalHandler,
+					},
+				),
 				// this line is used by starport scaffolding # stargate/appConfig/moduleBasic
 			},
 		),
@@ -222,6 +236,7 @@ func New(
 		&app.BankKeeper,
 		&app.StakingKeeper,
 		&app.DistrKeeper,
+		&app.GovKeeper,
 		&app.ConsensusParamsKeeper,
 		&app.CrisisKeeper,
 		&app.UpgradeKeeper,

@@ -6,6 +6,8 @@ import (
 	ibcfeetypes "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	sequencerv1 "github.com/decentrio/rollkit-sdk/api/rollkitsdk/sequencer/module"
+	sequencertypes "github.com/decentrio/rollkit-sdk/x/sequencer/types"
 
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
 	appv1alpha1 "cosmossdk.io/api/cosmos/app/v1alpha1"
@@ -18,6 +20,7 @@ import (
 	distrmodulev1 "cosmossdk.io/api/cosmos/distribution/module/v1"
 	feegrantmodulev1 "cosmossdk.io/api/cosmos/feegrant/module/v1"
 	genutilmodulev1 "cosmossdk.io/api/cosmos/genutil/module/v1"
+	govmodulev1 "cosmossdk.io/api/cosmos/gov/module/v1"
 	paramsmodulev1 "cosmossdk.io/api/cosmos/params/module/v1"
 	stakingmodulev1 "cosmossdk.io/api/cosmos/staking/module/v1"
 	txconfigv1 "cosmossdk.io/api/cosmos/tx/config/v1"
@@ -38,13 +41,9 @@ import (
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	sequencerv1 "github.com/decentrio/rollkit-sdk/api/rollkitsdk/sequencer/module"
-	_ "github.com/decentrio/rollkit-sdk/x/sequencer" // import for side-effects
-	sequencertypes "github.com/decentrio/rollkit-sdk/x/sequencer/types"
-	_ "github.com/decentrio/rollkit-sdk/x/staking" // import for side-effects
 )
 
 var (
@@ -62,6 +61,7 @@ var (
 		distrtypes.ModuleName,
 		sequencertypes.ModuleName,
 		stakingtypes.ModuleName,
+		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		ibcexported.ModuleName,
 		genutiltypes.ModuleName,
@@ -100,6 +100,7 @@ var (
 	endBlockers = []string{
 		// cosmos sdk modules
 		crisistypes.ModuleName,
+		govtypes.ModuleName,
 		sequencertypes.ModuleName,
 		stakingtypes.ModuleName,
 		feegrant.ModuleName,
@@ -125,6 +126,7 @@ var (
 		{Account: distrtypes.ModuleName},
 		{Account: stakingtypes.BondedPoolName, Permissions: []string{authtypes.Burner, stakingtypes.ModuleName}},
 		{Account: stakingtypes.NotBondedPoolName, Permissions: []string{authtypes.Burner, stakingtypes.ModuleName}},
+		{Account: govtypes.ModuleName, Permissions: []string{authtypes.Burner}},
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 		{Account: ibcfeetypes.ModuleName},
 		{Account: wasmtypes.ModuleName, Permissions: []string{authtypes.Burner}},
@@ -222,6 +224,10 @@ func appConfig() depinject.Config {
 			{
 				Name:   feegrant.ModuleName,
 				Config: appconfig.WrapAny(&feegrantmodulev1.Module{}),
+			},
+			{
+				Name:   govtypes.ModuleName,
+				Config: appconfig.WrapAny(&govmodulev1.Module{}),
 			},
 			{
 				Name:   crisistypes.ModuleName,
