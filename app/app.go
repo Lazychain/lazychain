@@ -11,10 +11,11 @@ import (
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	sequencerkeeper "github.com/decentrio/rollkit-sdk/x/sequencer/keeper"
+	rollkitstakingkeeper "github.com/decentrio/rollkit-sdk/x/staking/keeper"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1"                            // import for side-effects
 	_ "cosmossdk.io/x/circuit"                                          // import for side-effects
-	_ "cosmossdk.io/x/evidence"                                         // import for side-effects
 	_ "cosmossdk.io/x/feegrant/module"                                  // import for side-effects
 	_ "cosmossdk.io/x/upgrade"                                          // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/auth/tx/config"                   // import for side-effects
@@ -24,19 +25,18 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/x/consensus"                        // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/crisis"                           // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/distribution"                     // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/mint"                             // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/params"                           // import for side-effects
-	_ "github.com/cosmos/cosmos-sdk/x/slashing"                         // import for side-effects
 	_ "github.com/cosmos/cosmos-sdk/x/staking"                          // import for side-effects
 	_ "github.com/cosmos/ibc-go/modules/capability"                     // import for side-effects
 	_ "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts" // import for side-effects
 	_ "github.com/cosmos/ibc-go/v8/modules/apps/29-fee"                 // import for side-effects
+	_ "github.com/decentrio/rollkit-sdk/x/sequencer"                    // import for side-effects
+	_ "github.com/decentrio/rollkit-sdk/x/staking"                      // import for side-effects
 
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
-	evidencekeeper "cosmossdk.io/x/evidence/keeper"
 	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 
@@ -61,11 +61,13 @@ import (
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
+	"github.com/cosmos/cosmos-sdk/x/gov"
+	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
+	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
@@ -98,17 +100,15 @@ type LazyApp struct {
 	// keepers
 	AccountKeeper         authkeeper.AccountKeeper
 	BankKeeper            bankkeeper.Keeper
-	StakingKeeper         *stakingkeeper.Keeper
+	StakingKeeper         *rollkitstakingkeeper.Keeper
 	DistrKeeper           distrkeeper.Keeper
+	GovKeeper             *govkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 
-	SlashingKeeper       slashingkeeper.Keeper
-	MintKeeper           mintkeeper.Keeper
 	CrisisKeeper         *crisiskeeper.Keeper
 	UpgradeKeeper        *upgradekeeper.Keeper
 	ParamsKeeper         paramskeeper.Keeper
 	AuthzKeeper          authzkeeper.Keeper
-	EvidenceKeeper       evidencekeeper.Keeper
 	FeeGrantKeeper       feegrantkeeper.Keeper
 	CircuitBreakerKeeper circuitkeeper.Keeper
 
@@ -125,6 +125,8 @@ type LazyApp struct {
 	// CosmWasm
 	WasmKeeper       wasmkeeper.Keeper
 	ScopedWasmKeeper capabilitykeeper.ScopedKeeper
+
+	SequencerKeeper sequencerkeeper.Keeper
 
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
@@ -151,6 +153,11 @@ func Config() depinject.Config {
 			// supply custom module basics
 			map[string]module.AppModuleBasic{
 				genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+				govtypes.ModuleName: gov.NewAppModuleBasic(
+					[]govclient.ProposalHandler{
+						paramsclient.ProposalHandler,
+					},
+				),
 				// this line is used by starport scaffolding # stargate/appConfig/moduleBasic
 			},
 		),
@@ -215,14 +222,6 @@ func New(
 				//
 				// func() runtime.ValidatorAddressCodec { return <- custom validator address codec type -> }
 				// func() runtime.ConsensusAddressCodec { return <- custom consensus address codec type -> }
-
-				//
-				// MINT
-				//
-
-				// For providing a custom inflation function for x/mint add here your
-				// custom function that implements the minttypes.InflationCalculationFn
-				// interface.
 			),
 		)
 	)
@@ -237,16 +236,15 @@ func New(
 		&app.BankKeeper,
 		&app.StakingKeeper,
 		&app.DistrKeeper,
+		&app.GovKeeper,
 		&app.ConsensusParamsKeeper,
-		&app.SlashingKeeper,
-		&app.MintKeeper,
 		&app.CrisisKeeper,
 		&app.UpgradeKeeper,
 		&app.ParamsKeeper,
 		&app.AuthzKeeper,
-		&app.EvidenceKeeper,
 		&app.FeeGrantKeeper,
 		&app.CircuitBreakerKeeper,
+		&app.SequencerKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
 		panic(err)

@@ -125,7 +125,7 @@ func TransferCmd() *cobra.Command {
 			}
 
 			now := time.Now()
-			fiveMinutesLater := now.Add(5 * time.Minute) // TODO: Maybe more...
+			fiveMinutesLater := now.Add(10 * time.Minute) // TODO: Maybe more...
 			msg := transfertypes.NewMsgTransfer("transfer", ics20Channel, sdk.NewCoin(denom, sdkmath.NewInt(amount)), from, to, clienttypes.Height{}, uint64(fiveMinutesLater.UnixNano()), "")
 
 			if err := cmd.Flags().Set(sdkflags.FlagFrom, from); err != nil {

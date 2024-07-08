@@ -269,11 +269,18 @@ func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory
 						return nil, err
 					}
 					address := strings.TrimSuffix(string(addressBz), "\n")
+
 					pubKeyBz, _, err := s.LazyChain.Validators[0].Exec(s.Ctx, []string{"jq", "-r", ".pub_key.value", "/var/cosmos-chain/lazychain/config/priv_validator_key.json"}, []string{})
 					if err != nil {
 						return nil, err
 					}
 					pubKey := strings.TrimSuffix(string(pubKeyBz), "\n")
+
+					pubKeyValueBz, _, err := s.LazyChain.Validators[0].Exec(s.Ctx, []string{"jq", "-r", ".pub_key .value", "/var/cosmos-chain/lazychain/config/priv_validator_key.json"}, []string{})
+					if err != nil {
+						return nil, err
+					}
+					pubKeyValue := strings.TrimSuffix(string(pubKeyValueBz), "\n")
 
 					newGenesis := []cosmos.GenesisKV{
 						{
@@ -285,8 +292,20 @@ func (s *InterchainValues) getChainFactory() *interchaintest.BuiltinChainFactory
 										"type":  "tendermint/PubKeyEd25519",
 										"value": pubKey,
 									},
-									"power": "1000",
+									"power": "1",
 									"name":  "Rollkit Sequencer",
+								},
+							},
+						},
+						{
+							Key: "app_state.sequencer.sequencers",
+							Value: []map[string]interface{}{
+								{
+									"name": "test-1",
+									"consensus_pubkey": map[string]interface{}{
+										"@type": "/cosmos.crypto.ed25519.PubKey",
+										"key":   pubKeyValue,
+									},
 								},
 							},
 						},
