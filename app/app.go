@@ -72,6 +72,8 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"github.com/Lazychain/lazychain/docs"
+
+	tokenfactorykeeper "github.com/Stride-Labs/tokenfactory/tokenfactory/keeper"
 )
 
 var (
@@ -127,6 +129,9 @@ type LazyApp struct {
 	ScopedWasmKeeper capabilitykeeper.ScopedKeeper
 
 	SequencerKeeper sequencerkeeper.Keeper
+
+	// TokenFactory
+	TokenFactoryKeeper tokenfactorykeeper.Keeper
 
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
@@ -286,6 +291,11 @@ func New(
 
 	// Register legacy modules
 	if err := app.registerIBCModules(appOpts); err != nil {
+		return nil, err
+	}
+
+	// Register tokenfactory modules
+	if err := app.registerTokenFactoryModule(); err != nil {
 		return nil, err
 	}
 

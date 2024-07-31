@@ -44,6 +44,8 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	tokenfactorytypes "github.com/Stride-Labs/tokenfactory/tokenfactory/types"
 )
 
 var (
@@ -76,6 +78,7 @@ var (
 		circuittypes.ModuleName,
 		// chain modules
 		wasmtypes.ModuleName,
+		tokenfactorytypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 
@@ -94,6 +97,7 @@ var (
 		ibcfeetypes.ModuleName,
 		// chain modules
 		wasmtypes.ModuleName,
+		tokenfactorytypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	}
 
@@ -112,6 +116,7 @@ var (
 		ibcfeetypes.ModuleName,
 		// chain modules
 		wasmtypes.ModuleName,
+		tokenfactorytypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	}
 
@@ -130,6 +135,7 @@ var (
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 		{Account: ibcfeetypes.ModuleName},
 		{Account: wasmtypes.ModuleName, Permissions: []string{authtypes.Burner}},
+		{Account: tokenfactorytypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 
