@@ -6,9 +6,8 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
+	tokenfactorycli "github.com/Stride-Labs/tokenfactory/tokenfactory/client/cli"
 	dbm "github.com/cosmos/cosmos-db"
-	rollserv "github.com/rollkit/cosmos-sdk-starter/server"
-	rollconf "github.com/rollkit/rollkit/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -47,17 +46,7 @@ func initRootCmd(
 		snapshot.Cmd(newApp),
 	)
 
-	server.AddCommandsWithStartCmdOptions(
-		rootCmd,
-		app.DefaultNodeHome,
-		newApp, appExport,
-		server.StartCmdOptions{
-			AddFlags: func(cmd *cobra.Command) {
-				rollconf.AddFlags(cmd)
-				addModuleInitFlags(cmd)
-			},
-			StartCommandHandler: rollserv.StartHandler[servertypes.Application],
-		})
+	server.AddCommands(rootCmd, app.DefaultNodeHome, newApp, appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, genesis, and tx child commands
 	rootCmd.AddCommand(
@@ -108,6 +97,7 @@ func queryCommand() *cobra.Command {
 		// Custom query commands
 		sloths.GetQueryCmd(),
 		tia.GetQueryCmd(),
+		tokenfactorycli.GetQueryCmd(),
 	)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
@@ -140,6 +130,7 @@ func txCommand() *cobra.Command {
 	// Custom tx commands (setting this after, because we need the chain ID flag a bit)
 	cmd.AddCommand(sloths.GetTxCmd())
 	cmd.AddCommand(tia.GetTxCmd())
+	cmd.AddCommand(tokenfactorycli.GetTxCmd())
 
 	return cmd
 }
