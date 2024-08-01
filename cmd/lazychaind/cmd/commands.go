@@ -6,7 +6,6 @@ import (
 
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmcli "github.com/CosmWasm/wasmd/x/wasm/client/cli"
-	tokenfactorycli "github.com/Stride-Labs/tokenfactory/tokenfactory/client/cli"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -97,7 +96,6 @@ func queryCommand() *cobra.Command {
 		// Custom query commands
 		sloths.GetQueryCmd(),
 		tia.GetQueryCmd(),
-		tokenfactorycli.GetQueryCmd(),
 	)
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
@@ -130,7 +128,6 @@ func txCommand() *cobra.Command {
 	// Custom tx commands (setting this after, because we need the chain ID flag a bit)
 	cmd.AddCommand(sloths.GetTxCmd())
 	cmd.AddCommand(tia.GetTxCmd())
-	cmd.AddCommand(tokenfactorycli.GetTxCmd())
 
 	return cmd
 }
