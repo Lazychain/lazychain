@@ -314,6 +314,8 @@ github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWX
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
 github.com/Stride-Labs/tokenfactory v0.0.0-20240801022607-090196878af4 h1:HElzSCgQf0U90b5oV1SHFkxOBk/EMCK5toue/94Hxxk=
 github.com/Stride-Labs/tokenfactory v0.0.0-20240801022607-090196878af4/go.mod h1:10uC2Yz41gDscPGaEejr8A3zCC/cBFsLD0a+wzyyv1A=
+github.com/Stride-Labs/tokenfactory v0.0.0-20240801075150-9f4b69cdb4ff h1:MCzO4c/bUbpN5E8SCbJFBzpZNlLJOcFipvgNfWAdqr8=
+github.com/Stride-Labs/tokenfactory v0.0.0-20240801075150-9f4b69cdb4ff/go.mod h1:10uC2Yz41gDscPGaEejr8A3zCC/cBFsLD0a+wzyyv1A=
 github.com/VividCortex/gohistogram v1.0.0 h1:6+hBz+qvs0JOrrNhhmR7lFxo5sINxBCGXrdtl/UvroE=
 github.com/VividCortex/gohistogram v1.0.0/go.mod h1:Pf5mBqqDxYaXu3hDrrU+w6nw50o/4+TcAqDqk/vUH7g=
 github.com/Workiva/go-datastructures v1.0.53/go.mod h1:1yZL+zfsztete+ePzZz/Zb1/t5BnDuE2Ya2MMGhzP6A=

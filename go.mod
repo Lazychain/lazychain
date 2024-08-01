@@ -28,7 +28,7 @@ require (
 	cosmossdk.io/x/feegrant v0.1.0
 	cosmossdk.io/x/upgrade v0.1.3
 	github.com/CosmWasm/wasmd v0.51.0
-	github.com/Stride-Labs/tokenfactory v0.0.0-20240801022607-090196878af4
+	github.com/Stride-Labs/tokenfactory v0.0.0-20240801075150-9f4b69cdb4ff
 	github.com/bufbuild/buf v1.30.0
 	github.com/cometbft/cometbft v0.38.9
 	github.com/cosmos/cosmos-db v1.0.2
