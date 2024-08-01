@@ -5,6 +5,9 @@ go 1.22.4
 toolchain go1.22.5
 
 replace (
+	// TODO(https://github.com/cosmos/rosetta/issues/76): Rosetta requires cosmossdk.io/core v0.12.0 erroneously but
+	// should use v0.11.0. The Cosmos build fails with types/context.go:65:29: undefined: comet.BlockInfo otherwise.
+	cosmossdk.io/core => cosmossdk.io/core v0.11.0
 	// fix upstream GHSA-h395-qcrw-5vmq vulnerability.
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 	// replace broken goleveldb
@@ -24,7 +27,7 @@ require (
 	cosmossdk.io/x/feegrant v0.1.0
 	cosmossdk.io/x/upgrade v0.1.3
 	github.com/CosmWasm/wasmd v0.51.0
-	github.com/Stride-Labs/tokenfactory v0.0.0-20240801175717-2af4c1443051
+	github.com/Stride-Labs/tokenfactory v0.0.0-20240801182121-1a4d0ff100e4
 	github.com/bufbuild/buf v1.30.0
 	github.com/cometbft/cometbft v0.38.9
 	github.com/cosmos/cosmos-db v1.0.2
