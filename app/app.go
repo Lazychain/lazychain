@@ -72,6 +72,8 @@ import (
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"github.com/Lazychain/lazychain/docs"
+
+	tokenfactorykeeper "github.com/Stride-Labs/tokenfactory/tokenfactory/keeper"
 )
 
 var (
@@ -127,6 +129,9 @@ type LazyApp struct {
 	ScopedWasmKeeper capabilitykeeper.ScopedKeeper
 
 	SequencerKeeper sequencerkeeper.Keeper
+
+	// TokenFactory
+	TokenFactoryKeeper tokenfactorykeeper.Keeper
 
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
@@ -289,6 +294,11 @@ func New(
 		return nil, err
 	}
 
+	// Register tokenfactory modules
+	if err := app.registerTokenFactoryModule(); err != nil {
+		return nil, err
+	}
+
 	// register streaming services
 	if err := app.RegisterStreamingServices(appOpts, app.kvStoreKeys()); err != nil {
 		return nil, err
@@ -305,6 +315,9 @@ func New(
 	}
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, overrideModules)
 	app.sm.RegisterStoreDecoders()
+
+	// setupUpgradeHandlers() shoulbe be called after app.ModuleManager & app.Configurator are configured
+	app.setupUpgradeHandlers()
 
 	// A custom InitChainer can be set if extra pre-init-genesis logic is required.
 	// By default, when using app wiring enabled module, this is not required.
