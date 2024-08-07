@@ -1,6 +1,11 @@
 package app
 
 import (
+	upgradetypes "cosmossdk.io/x/upgrade/types"
+	"errors"
+	"fmt"
+	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"io"
 	"os"
 	"path/filepath"
@@ -289,6 +294,40 @@ func New(
 
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
 
+	die := false
+	app.SetPreBlocker(func(ctx sdk.Context, block *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+		upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+		if err != nil {
+			panic(fmt.Sprintf("Failed to read upgrade info from disk %s", err))
+		}
+
+		if upgradeInfo.Name == "" {
+			return app.ModuleManager.PreBlock(ctx)
+		}
+
+		plan, err := app.UpgradeKeeper.GetUpgradePlan(ctx)
+		if err != nil && !errors.Is(err, upgradetypes.ErrNoUpgradePlanFound) {
+			app.Logger().Error("🦥 PreBlocker: Failed to get upgrade plan", "error", err)
+		}
+
+		if errors.Is(err, upgradetypes.ErrNoUpgradePlanFound) && upgradeInfo.ShouldExecute(block.Height+1) {
+			if err := app.UpgradeKeeper.ScheduleUpgrade(ctx, upgradeInfo); err != nil {
+				app.Logger().Error("🦥 PreBlocker: Failed to schedule upgrade", "error", err)
+			}
+
+			app.Logger().Info("🦥 PreBlocker: Upgrade plan scheduled", "name", upgradeInfo.Name, "height", upgradeInfo.Height)
+
+			die = true
+
+			return &sdk.ResponsePreBlock{}, nil
+		} else if die {
+			app.Logger().Info("🦥 PreBlocker: Upgrade plan found", "name", plan.Name, "height", plan.Height)
+			panic("RESTART THE CHAIN!")
+		}
+
+		return app.ModuleManager.PreBlock(ctx)
+	})
+
 	// Register legacy modules
 	if err := app.registerIBCModules(appOpts); err != nil {
 		return nil, err
@@ -329,6 +368,13 @@ func New(
 	// 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
 	// 	return app.LazyApp.InitChainer(ctx, req)
 	// })
+
+	app.SetInitChainer(func(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
+		if err := app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap()); err != nil {
+			return nil, err
+		}
+		return app.App.InitChainer(ctx, req)
+	})
 
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/Lazychain/lazychain/cmd/lazychaind/cmd/createupgradeplan"
 	"io"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -66,6 +67,7 @@ func initRootCmd(
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
+		createupgradeplan.CreateUpgradePlanCmd(),
 	)
 	wasmcli.ExtendUnsafeResetAllCmd(
 		rootCmd,

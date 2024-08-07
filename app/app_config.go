@@ -220,7 +220,8 @@ func appConfig() depinject.Config {
 				Config: appconfig.WrapAny(&authzmodulev1.Module{}),
 			},
 			{
-				Name:   upgradetypes.ModuleName,
+				Name: upgradetypes.ModuleName,
+				// TODO: Set the authority for this to something else than gov
 				Config: appconfig.WrapAny(&upgrademodulev1.Module{}),
 			},
 			{
