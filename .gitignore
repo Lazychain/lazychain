@@ -15,4 +15,6 @@ astral/
 
 artifacts/
 build/
-restart-lazychaind.sh
+restart-lazychain.sh
+entrypoint
+rollkit.toml

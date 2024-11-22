@@ -6,12 +6,9 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
 	"github.com/Lazychain/lazychain/app/upgrades"
-	v1_1 "github.com/Lazychain/lazychain/app/upgrades/v1.1"
 )
 
-var Upgrades = []upgrades.Upgrade{
-	v1_1.Upgrade,
-}
+var Upgrades = []upgrades.Upgrade{}
 
 func (app *LazyApp) setupUpgradeHandlers() {
 	// register upgrade handlers
